@@ -105,4 +105,48 @@ D	d_K	h_K	eps0	gamma	closed_form	#M	#classes	status	seconds	notes
 179	716	-	4190210 + 313191sqrt(179)	-	-	-	-	timeout(600s)	602	
 181	181	1	(1305 + 97sqrt(181))/2	17.9196875951156437113957	root of +157976*x^4 +166635*x^3 -34771032*x^2 -299589840*x^1 -714492900*x^0	6	9	certified+verified	27	
 182	728	2	27 + 2sqrt(182)	176.6982214495062442193797	(417079488 + 1763200*sqrt(1244390))/13491751	6	17	certified+verified	64	
+183	732	2	487 + 36sqrt(183)	109.0	109	8	11	certified+verified	293	
 185	185	2	68 + 5sqrt(185)	36.12769769502906997511263	?	5	8	certified+verified	32	
+186	744	-	7501 + 550sqrt(186)	-	-	-	-	timeout(600s)	600	
+187	748	-	1682 + 123sqrt(187)	-	-	-	-	timeout(600s)	600	
+190	760	-	52021 + 3774sqrt(190)	-	-	-	-	timeout(600s)	603	
+191	764	-	8994000 + 650783sqrt(191)	-	-	-	-	timeout(600s)	603	
+193	193	-	1764132 + 126985sqrt(193)	-	-	-	-	timeout(600s)	600	
+194	776	2	195 + 14sqrt(194)	146.1240310077519379844961	18850/129	8	15	certified+verified	152	
+195	780	4	14 + sqrt(195)	190.9035758923594004818039	?	6	34	certified+verified	90	
+197	197	1	14 + sqrt(197)	38.56106026712438979056314	(9512 + 29*sqrt(525793))/792	6	8	certified+verified	10	
+201	201	-	515095 + 36332sqrt(201)	-	-	-	-	timeout(600s)	600	
+202	808	-	3141 + 221sqrt(202)	-	-	-	-	timeout(600s)	600	
+203	812	2	57 + 4sqrt(203)	156.963543441338158368121	(9100 + 256*sqrt(1057))/111	8	15	certified+verified	96	multistart missed the maximum; recovered from the B&B (chart 0); multistart missed the maximum; recovered from the B&B (chart 0)
+205	205	2	(43 + 3sqrt(205))/2	48.07545844866995207312215	root of +3390464*x^4 -168159912*x^3 -423244017*x^2 +36388173024*x^1 -197605142784*x^0	8	15	certified+verified	19	
+206	824	-	59535 + 4148sqrt(206)	-	-	-	-	timeout(600s)	642	
+209	209	-	46551 + 3220sqrt(209)	-	-	-	-	timeout(600s)	600	
+210	840	4	29 + 2sqrt(210)	161.4304037947459266454736	?	6	43	certified+verified	121	multistart missed the maximum; recovered from the B&B (chart 0)
+213	213	1	(73 + 5sqrt(213))/2	44.95490883759806679062881	(6958 + 60*sqrt(65746))/497	8	7	certified+verified	9	
+214	856	-	695359189925 + 47533775646sqrt(214)	-	-	-	-	error:NotImplementedError('fundamental unit 1.39e+12 exceeds 1e+12: float routines unreliable')	0	
+215	860	2	44 + 3sqrt(215)	193.3354733487220758599592	?	6	11	certified+verified	83	
+217	217	-	3844063 + 260952sqrt(217)	-	-	-	-	timeout(600s)	601	
+218	872	2	251 + 17sqrt(218)	129.928929390354204929907	?	6	9	certified+verified	266	multistart missed the maximum; recovered from the B&B (chart 0)
+219	876	4	74 + 5sqrt(219)	196.0	196	12	22	certified+verified	143	multistart missed the maximum; recovered from the B&B (chart 0)
+221	221	2	(15 + sqrt(221))/2	57.7800522366324297733847	root of +2763264*x^4 -127913032*x^3 -1892844226*x^2 +3400163897*x^1 -1444912144*x^0	6	24	certified+verified	22	multistart missed the maximum; recovered from the B&B (chart 0)
+222	888	2	149 + 10sqrt(222)	161.3668079031353418410846	(50668956 + 248832*sqrt(126429))/862295	6	8	certified+verified	145	
+223	892	3	224 + 15sqrt(223)	148.6687107398152813337675	?	6	9	certified+verified	175	
+226	904	8	15 + sqrt(226)	207.6829089745154947938811	?	5	59	certified+verified	130	
+227	908	1	226 + 15sqrt(227)	169.3333333333333333333333	508/3	12	8	certified+verified	139	multistart missed the maximum; recovered from the B&B (chart 0); multistart missed the maximum; recovered from the B&B (chart 0)
+229	229	3	(15 + sqrt(229))/2	50.70076127760953805494229	(3822660 + 15120*sqrt(89310))/164519	5	17	certified+verified	26	
+230	920	2	91 + 6sqrt(230)	241.3333333333333333333333	724/3	12	9	certified+verified	98	
+231	924	4	76 + 5sqrt(231)	218.7004588686248510084819	sqrt((8600800000 + 156800000*sqrt(2431))/341457)	7	47	certified+verified	154	
+233	233	-	23156 + 1517sqrt(233)	-	-	-	-	timeout(600s)	600	
+235	940	6	46 + 3sqrt(235)	281.3333333333333333333333	844/3	12	32	certified+verified	115	
+237	237	1	(77 + 5sqrt(237))/2	52.05321322379350258242317	(3341 + 13*sqrt(33654))/110	6	9	certified+verified	16	
+238	952	-	11663 + 756sqrt(238)	-	-	-	-	timeout(600s)	601	
+239	956	-	6195120 + 400729sqrt(239)	-	-	-	-	timeout(600s)	603	
+241	241	-	71011068 + 4574225sqrt(241)	-	-	-	-	timeout(600s)	602	
+246	984	-	88805 + 5662sqrt(246)	-	-	-	-	timeout(600s)	602	
+247	988	-	85292 + 5427sqrt(247)	-	-	-	-	timeout(600s)	603	
+251	1004	-	3674890 + 231957sqrt(251)	-	-	-	-	timeout(600s)	602	
+253	253	1	(1861 + 117sqrt(253))/2	29.80017586949852871966498	(2968 + 14*sqrt(41239))/195	6	8	certified+verified	68	
+254	1016	3	255 + 16sqrt(254)	183.96502699255344900787	(288708 + 2744*sqrt(228346))/8697	6	11	certified+verified	232	multistart missed the maximum; recovered from the B&B (chart 0)
+255	1020	4	16 + sqrt(255)	244.0534071395832182138812	?	6	47	certified+verified	125	
+257	257	3	16 + sqrt(257)	52.20959108828043506409141	?	6	15	certified+verified	24	
+258	1032	2	257 + 16sqrt(258)	204.3313609467455621301775	34532/169	8	12	certified+verified	273	multistart missed the maximum; recovered from the B&B (chart 0); multistart missed the maximum; recovered from the B&B (chart 0)

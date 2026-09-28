@@ -1,6 +1,6 @@
 # Hermite–Humbert constants γ_{K,2}, K = Q(√D)
 
-Generated from `gamma_K2.tsv` by `python -m hermite_humbert.tables`. All squarefree D in [2, 185] were attempted: 87 certified (exact mode, certificate re-checked with outward rounding), 20 open.
+Generated from `gamma_K2.tsv` by `python -m hermite_humbert.tables`. All squarefree D in [2, 258] were attempted: 113 certified (exact mode, certificate re-checked with outward rounding), 38 open.
 
 γ is given to 25 significant digits; the per-field JSON files in `fields/` hold 50 digits, every extreme class found, the normal forms and minimal vectors.  `#M` = number of minimal vectors (up to units) of the critical form, `#cl` = number of GL₂(O_K)-classes of extreme forms found (the list of non-critical ones is not certified complete).
 
@@ -92,7 +92,33 @@ Generated from `gamma_K2.tsv` by `python -m hermite_humbert.tables`. All squaref
 | 173 | 173 | 1 | (13 + sqrt(173))/2 | 35.02241481784980682016859 | (34655 + 551·sqrt(9169))/2496 | 6 | 13 | 12 |
 | 181 | 181 | 1 | (1305 + 97sqrt(181))/2 | 17.9196875951156437113957 | root of +157976·x^4 +166635·x^3 -34771032·x^2 -299589840·x^1 -714492900·x^0 | 6 | 9 | 27 |
 | 182 | 728 | 2 | 27 + 2sqrt(182) | 176.6982214495062442193797 | (417079488 + 1763200·sqrt(1244390))/13491751 | 6 | 17 | 64 |
+| 183 | 732 | 2 | 487 + 36sqrt(183) | 109.0 | 109 | 8 | 11 | 293 |
 | 185 | 185 | 2 | 68 + 5sqrt(185) | 36.12769769502906997511263 | not found by PSLQ | 5 | 8 | 32 |
+| 194 | 776 | 2 | 195 + 14sqrt(194) | 146.1240310077519379844961 | 18850/129 | 8 | 15 | 152 |
+| 195 | 780 | 4 | 14 + sqrt(195) | 190.9035758923594004818039 | not found by PSLQ | 6 | 34 | 90 |
+| 197 | 197 | 1 | 14 + sqrt(197) | 38.56106026712438979056314 | (9512 + 29·sqrt(525793))/792 | 6 | 8 | 10 |
+| 203 | 812 | 2 | 57 + 4sqrt(203) | 156.963543441338158368121 | (9100 + 256·sqrt(1057))/111 | 8 | 15 | 96 |
+| 205 | 205 | 2 | (43 + 3sqrt(205))/2 | 48.07545844866995207312215 | root of +3390464·x^4 -168159912·x^3 -423244017·x^2 +36388173024·x^1 -197605142784·x^0 | 8 | 15 | 19 |
+| 210 | 840 | 4 | 29 + 2sqrt(210) | 161.4304037947459266454736 | not found by PSLQ | 6 | 43 | 121 |
+| 213 | 213 | 1 | (73 + 5sqrt(213))/2 | 44.95490883759806679062881 | (6958 + 60·sqrt(65746))/497 | 8 | 7 | 9 |
+| 215 | 860 | 2 | 44 + 3sqrt(215) | 193.3354733487220758599592 | not found by PSLQ | 6 | 11 | 83 |
+| 218 | 872 | 2 | 251 + 17sqrt(218) | 129.928929390354204929907 | not found by PSLQ | 6 | 9 | 266 |
+| 219 | 876 | 4 | 74 + 5sqrt(219) | 196.0 | 196 | 12 | 22 | 143 |
+| 221 | 221 | 2 | (15 + sqrt(221))/2 | 57.7800522366324297733847 | root of +2763264·x^4 -127913032·x^3 -1892844226·x^2 +3400163897·x^1 -1444912144·x^0 | 6 | 24 | 22 |
+| 222 | 888 | 2 | 149 + 10sqrt(222) | 161.3668079031353418410846 | (50668956 + 248832·sqrt(126429))/862295 | 6 | 8 | 145 |
+| 223 | 892 | 3 | 224 + 15sqrt(223) | 148.6687107398152813337675 | not found by PSLQ | 6 | 9 | 175 |
+| 226 | 904 | 8 | 15 + sqrt(226) | 207.6829089745154947938811 | not found by PSLQ | 5 | 59 | 130 |
+| 227 | 908 | 1 | 226 + 15sqrt(227) | 169.3333333333333333333333 | 508/3 | 12 | 8 | 139 |
+| 229 | 229 | 3 | (15 + sqrt(229))/2 | 50.70076127760953805494229 | (3822660 + 15120·sqrt(89310))/164519 | 5 | 17 | 26 |
+| 230 | 920 | 2 | 91 + 6sqrt(230) | 241.3333333333333333333333 | 724/3 | 12 | 9 | 98 |
+| 231 | 924 | 4 | 76 + 5sqrt(231) | 218.7004588686248510084819 | sqrt((8600800000 + 156800000·sqrt(2431))/341457) | 7 | 47 | 154 |
+| 235 | 940 | 6 | 46 + 3sqrt(235) | 281.3333333333333333333333 | 844/3 | 12 | 32 | 115 |
+| 237 | 237 | 1 | (77 + 5sqrt(237))/2 | 52.05321322379350258242317 | (3341 + 13·sqrt(33654))/110 | 6 | 9 | 16 |
+| 253 | 253 | 1 | (1861 + 117sqrt(253))/2 | 29.80017586949852871966498 | (2968 + 14·sqrt(41239))/195 | 6 | 8 | 68 |
+| 254 | 1016 | 3 | 255 + 16sqrt(254) | 183.96502699255344900787 | (288708 + 2744·sqrt(228346))/8697 | 6 | 11 | 232 |
+| 255 | 1020 | 4 | 16 + sqrt(255) | 244.0534071395832182138812 | not found by PSLQ | 6 | 47 | 125 |
+| 257 | 257 | 3 | 16 + sqrt(257) | 52.20959108828043506409141 | not found by PSLQ | 6 | 15 | 24 |
+| 258 | 1032 | 2 | 257 + 16sqrt(258) | 204.3313609467455621301775 | 34532/169 | 8 | 12 | 273 |
 
 ## Not (yet) certified
 
@@ -118,3 +144,21 @@ Generated from `gamma_K2.tsv` by `python -m hermite_humbert.tables`. All squaref
 | 177 | 177 | 62423 + 4692sqrt(177) | open (timeout(600s)) |  |
 | 178 | 712 | 1601 + 120sqrt(178) | open (timeout(600s)) |  |
 | 179 | 716 | 4190210 + 313191sqrt(179) | open (timeout(600s)) |  |
+| 186 | 744 | 7501 + 550sqrt(186) | open (timeout(600s)) |  |
+| 187 | 748 | 1682 + 123sqrt(187) | open (timeout(600s)) |  |
+| 190 | 760 | 52021 + 3774sqrt(190) | open (timeout(600s)) |  |
+| 191 | 764 | 8994000 + 650783sqrt(191) | open (timeout(600s)) |  |
+| 193 | 193 | 1764132 + 126985sqrt(193) | open (timeout(600s)) |  |
+| 201 | 201 | 515095 + 36332sqrt(201) | open (timeout(600s)) |  |
+| 202 | 808 | 3141 + 221sqrt(202) | open (timeout(600s)) |  |
+| 206 | 824 | 59535 + 4148sqrt(206) | open (timeout(600s)) |  |
+| 209 | 209 | 46551 + 3220sqrt(209) | open (timeout(600s)) |  |
+| 214 | 856 | 695359189925 + 47533775646sqrt(214) | error:NotImplementedError('fundamental unit 1.39e+12 exceeds 1e+12: float routines unreliable') |  |
+| 217 | 217 | 3844063 + 260952sqrt(217) | open (timeout(600s)) |  |
+| 233 | 233 | 23156 + 1517sqrt(233) | open (timeout(600s)) |  |
+| 238 | 952 | 11663 + 756sqrt(238) | open (timeout(600s)) |  |
+| 239 | 956 | 6195120 + 400729sqrt(239) | open (timeout(600s)) |  |
+| 241 | 241 | 71011068 + 4574225sqrt(241) | open (timeout(600s)) |  |
+| 246 | 984 | 88805 + 5662sqrt(246) | open (timeout(600s)) |  |
+| 247 | 988 | 85292 + 5427sqrt(247) | open (timeout(600s)) |  |
+| 251 | 1004 | 3674890 + 231957sqrt(251) | open (timeout(600s)) |  |

@@ -1,0 +1,9 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+cysignals_crash_logs/
+# field lists are downloaded (python -m sails fetch-visser / fetch-lmfdb)
+data/*.txt
+# computation outputs
+results/

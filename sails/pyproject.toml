@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sails"
+version = "0.1.0"
+description = "Sails and indecomposable integers of totally real number fields"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = ["cypari2>=2.1", "numpy>=1.22", "mpmath>=1.2"]
+
+[project.scripts]
+sails = "sails.cli:main"
+
+[tool.setuptools]
+packages = ["sails"]

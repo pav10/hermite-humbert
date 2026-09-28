@@ -1,6 +1,6 @@
 # Hermite–Humbert constants γ_{K,2}, K = Q(√D)
 
-Generated from `gamma_K2.tsv` by `python -m hermite_humbert.tables`. All squarefree D in [2, 258] were attempted: 113 certified (exact mode, certificate re-checked with outward rounding), 38 open.
+Generated from `gamma_K2.tsv` by `python -m hermite_humbert.tables`. All squarefree D in [2, 269] were attempted: 114 certified (exact mode, certificate re-checked with outward rounding), 40 open.
 
 γ is given to 25 significant digits; the per-field JSON files in `fields/` hold 50 digits, every extreme class found, the normal forms and minimal vectors.  `#M` = number of minimal vectors (up to units) of the critical form, `#cl` = number of GL₂(O_K)-classes of extreme forms found (the list of non-critical ones is not certified complete).
 
@@ -119,6 +119,7 @@ Generated from `gamma_K2.tsv` by `python -m hermite_humbert.tables`. All squaref
 | 255 | 1020 | 4 | 16 + sqrt(255) | 244.0534071395832182138812 | not found by PSLQ | 6 | 47 | 125 |
 | 257 | 257 | 3 | 16 + sqrt(257) | 52.20959108828043506409141 | not found by PSLQ | 6 | 15 | 24 |
 | 258 | 1032 | 2 | 257 + 16sqrt(258) | 204.3313609467455621301775 | 34532/169 | 8 | 12 | 273 |
+| 269 | 269 | 1 | 82 + 5sqrt(269) | 49.50768413754912148901791 | not found by PSLQ | 5 | 12 | 28 |
 
 ## Not (yet) certified
 
@@ -162,3 +163,5 @@ Generated from `gamma_K2.tsv` by `python -m hermite_humbert.tables`. All squaref
 | 246 | 984 | 88805 + 5662sqrt(246) | open (timeout(600s)) |  |
 | 247 | 988 | 85292 + 5427sqrt(247) | open (timeout(600s)) |  |
 | 251 | 1004 | 3674890 + 231957sqrt(251) | open (timeout(600s)) |  |
+| 259 | 1036 | 847225 + 52644sqrt(259) | open (timeout(600s)) |  |
+| 263 | 1052 | 139128 + 8579sqrt(263) | open (timeout(600s)) |  |

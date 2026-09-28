@@ -150,3 +150,6 @@ D	d_K	h_K	eps0	gamma	closed_form	#M	#classes	status	seconds	notes
 255	1020	4	16 + sqrt(255)	244.0534071395832182138812	?	6	47	certified+verified	125	
 257	257	3	16 + sqrt(257)	52.20959108828043506409141	?	6	15	certified+verified	24	
 258	1032	2	257 + 16sqrt(258)	204.3313609467455621301775	34532/169	8	12	certified+verified	273	multistart missed the maximum; recovered from the B&B (chart 0); multistart missed the maximum; recovered from the B&B (chart 0)
+259	1036	-	847225 + 52644sqrt(259)	-	-	-	-	timeout(600s)	601	
+263	1052	-	139128 + 8579sqrt(263)	-	-	-	-	timeout(600s)	600	
+269	269	1	82 + 5sqrt(269)	49.50768413754912148901791	?	5	12	certified+verified	28	

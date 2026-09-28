@@ -63,7 +63,7 @@ def jsonable(x):
     return repr(x)
 
 
-def run_field(D, timeout=0, verify=True, details=None):
+def run_field(D, timeout=0, verify=True, details=None, field_jobs=1):
     """Compute one field; returns (D, TSV row as a dict).  Never raises."""
     from .core import compute
     F = RealQuadraticField(D)
@@ -78,7 +78,7 @@ def run_field(D, timeout=0, verify=True, details=None):
     if timeout:
         signal.alarm(int(timeout))
     try:
-        r = compute(D, verbose=False, exact=True, verify=verify)
+        r = compute(D, verbose=False, exact=True, verify=verify, jobs=field_jobs)
         signal.alarm(0)
         ex = r["exact"]
         if ex and ex["proved"]:
@@ -144,6 +144,9 @@ def main(argv=None):
     ap.add_argument("out", help="TSV results table (created or updated)")
     ap.add_argument("fields", nargs="+", help="D values or ranges, e.g. 2-200 46 91,95")
     ap.add_argument("--jobs", "-j", type=int, default=os.cpu_count() or 1)
+    ap.add_argument("--field-jobs", type=int, default=1,
+                    help="processes for the branch-and-bound of each field; use with --jobs 1 "
+                         "for fields with a large fundamental unit")
     ap.add_argument("--timeout", type=int, default=3600, help="seconds per field (0 = none)")
     ap.add_argument("--details", default=None,
                     help="directory for per-field JSON (default: <out dir>/fields)")
@@ -152,17 +155,35 @@ def main(argv=None):
     a = ap.parse_args(argv)
     details = a.details or os.path.join(os.path.dirname(os.path.abspath(a.out)), "fields")
     rows = read_table(a.out)
-    todo = [D for D in parse_fields(a.fields)
-            if a.redo or not rows.get(D, {}).get("status", "").startswith("certified")]
+
+    def pending(D):
+        st = rows.get(D, {}).get("status", "")
+        if a.redo or not st:
+            return True
+        if st.startswith("certified"):
+            return False
+        if st.startswith("timeout(") and a.timeout:
+            # already timed out with at least this time limit: retrying cannot help
+            return int(st[len("timeout("):].rstrip("s)")) < a.timeout
+        return True
+    todo = [D for D in parse_fields(a.fields) if pending(D)]
     print("%d fields to compute with %d worker(s)" % (len(todo), a.jobs), flush=True)
-    jobs = [(D, a.timeout, not a.no_verify, details) for D in todo]
+    jobs = [(D, a.timeout, not a.no_verify, details, a.field_jobs) for D in todo]
+
+    def record(D, row):
+        rows[D] = row
+        write_table(a.out, rows)
+        print("%5d  h=%-2s %-28s %-40s %s  %ss" % (D, row["h_K"], row["gamma"], row["closed_form"][:40],
+                                                  row["status"], row["seconds"]), flush=True)
+
+    if a.jobs == 1:                 # in-process (lets --field-jobs use its own pool)
+        for args in jobs:
+            record(*run_field(*args))
+        return
     ctx = mp.get_context("fork" if sys.platform != "win32" else "spawn")
     with ctx.Pool(a.jobs, maxtasksperchild=1) as pool:
         for D, row in pool.imap_unordered(_worker, jobs):
-            rows[D] = row
-            write_table(a.out, rows)
-            print("%5d  h=%-2s %-28s %-40s %s  %ss" % (D, row["h_K"], row["gamma"], row["closed_form"][:40],
-                                                      row["status"], row["seconds"]), flush=True)
+            record(D, row)
 
 
 if __name__ == "__main__":

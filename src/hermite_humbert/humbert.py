@@ -154,6 +154,8 @@ class HumbertProblem:
         self.s_max = 0.5 * math.log(self.eps)
         self.t_lo = 0.5 * math.log(2.0 / self.d)
         self.V = None
+        self.vs_range = None        # s-range on which V is exact (None: the region's own)
+        self.chart_index = 0        # which chart this problem (or slab of it) belongs to
         # chart: lattice Lambda_c = A (+) B with A = c^{-1}, B = c, translations by T = c^{-2}
         # (chart None = O_K^2, the h_K = 1 setting).  Galois (s >= 0) only if the chart allows it.
         self.chart = chart
@@ -231,6 +233,28 @@ class HumbertProblem:
         g1, g2 = self.g1, self.g2
         return np.array([r1 * g1[0] + r2 * g2[0], r1 * g1[1] + r2 * g2[1], y1, y2])
 
+    def slab(self, s_lo, s_hi, margin=0.25):
+        """The same problem restricted to s in [s_lo, s_hi] (a slab of the region).
+        Its working set V is built for the slightly wider range [s_lo - margin,
+        s_hi + margin] (clipped to the full region), so that vertices found near
+        the slab boundary are still evaluated exactly.  The candidate bounds
+        depend on the s-range only through y1/y2 <= e^{-2 s_lo}, y2/y1 <= e^{2 s_hi},
+        so a slab of width w needs about e^{w} / sqrt(eps0) of the vectors of
+        the whole region (this is what makes large units feasible)."""
+        import copy
+        Q = copy.copy(self)
+        Q.s_min, Q.s_max = float(s_lo), float(s_hi)
+        Q.vs_range = (max(self.s_min, s_lo - margin), min(self.s_max, s_hi + margin))
+        Q.V = None
+        return Q
+
+    def in_V_region(self, p, tol=1e-12):
+        """Is p in the half-cell, t >= t_lo, with s in the range where V is exact?"""
+        lo, hi = self.vs_range or (self.s_min, self.s_max)
+        r1, r2, s, t = self.p_to_rst(p)
+        return (-0.5 - tol <= r1 <= 0.5 + tol and -tol <= r2 <= 0.5 + tol
+                and lo - tol <= s <= hi + tol and t >= self.t_lo - tol)
+
     def in_exact_region(self, p, tol=1e-12):
         r1, r2, s, t = self.p_to_rst(p)
         return (-0.5 - tol <= r1 <= 0.5 + tol and -tol <= r2 <= 0.5 + tol
@@ -257,7 +281,7 @@ class HumbertProblem:
         cs = [(r1 * g1[0] + r2 * g2[0], r1 * g1[1] + r2 * g2[1]) for r1 in (-0.5, 0.5) for r2 in (0.0, 0.5)]
         return (min(c[0] for c in cs), max(c[0] for c in cs)), (min(c[1] for c in cs), max(c[1] for c in cs))
 
-    def candidate_vectors(self, C):
+    def candidate_vectors(self, C, s_range=None):
         """All unit classes of v = (alpha, beta) in Lambda_c = A (+) B with f_v(z) <= C
         for some z in R_V = {r in the half-cell, s in [s_min, s_max], t >= t_lo}
         (primitive ones only when h_K = 1).  Rigorous up to the 1e-9 float slack:
@@ -265,18 +289,23 @@ class HumbertProblem:
                      in its class), so e1 dominates;
           beta != 0: f_v >= N(beta)^2 y1 y2 >= 2 N(beta)^2/d, and
             (alpha/beta + x1)^2 <= C y1/(N(beta)^2 y2),  (alpha'/beta' + x2)^2 <= C y2/(N(beta)^2 y1),
-          with y1/y2 <= 1 (Galois chart, s >= 0) or <= eps0, and y2/y1 <= eps0.
+          with y1/y2 <= e^{-2 s_lo} and y2/y1 <= e^{2 s_hi} on s in [s_lo, s_hi]
+          (the whole region: 1 or eps0 (Galois chart or not), and eps0).
+        s_range defaults to the range where this problem's V must be exact
+        (vs_range for a slab, else the region).
         On R_V, min_{v in V} f_v(z) = G(z) whenever this minimum is <= C."""
         F = self.F
         vecs = [((1, 0), (0, 0))]
         Nmax = int(math.floor(math.sqrt(C * self.d / 2.0) + 1e-9))
         X1, X2 = self.x_ranges()
         reps = self.B.norm_reps(Nmax) if Nmax >= 1 else {}
-        r12 = 1.0 if self.galois_ok else self.eps
+        s_lo, s_hi = s_range or self.vs_range or (self.s_min, self.s_max)
+        r12 = math.exp(-2.0 * s_lo) * (1 + 1e-12)     # max y1/y2
+        r21 = math.exp(2.0 * s_hi) * (1 + 1e-12)      # max y2/y1
         for n, blist in sorted(reps.items()):
             n = float(n)
             R1 = math.sqrt(C * r12) / n
-            R2 = math.sqrt(C * self.eps) / n
+            R2 = math.sqrt(C * r21) / n
             for beta in blist:
                 b1, b2 = F.emb(beta)
                 lo1, hi1 = -X1[1] - R1, -X1[0] + R1

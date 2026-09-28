@@ -26,6 +26,7 @@ D	d_K	h_K	eps0	gamma	closed_form	#M	#classes	status	seconds	notes
 39	156	2	25 + 4sqrt(39)	25.0	25	8	16	certified+verified	14	
 41	41	1	32 + 5sqrt(41)	5.321107360286191116964917	(235 + 5*sqrt(7585))/126	5	4	certified+verified	6	
 42	168	2	13 + 2sqrt(42)	36.62632580759429512826624	sqrt((16404497408 + 35995648*sqrt(207130))/24440529)	6	12	certified+verified	15	
+43	172	1	3482 + 531sqrt(43)	21.12531406689087882915681	(2028 + 104*sqrt(1634))/295	8	3	certified+verified	190	
 47	188	1	48 + 7sqrt(47)	33.41266991308022009784635	(807 + 35*sqrt(1833))/69	6	9	certified+verified	10	
 51	204	2	50 + 7sqrt(51)	36.60198065763817821317744	(51300 + 360*sqrt(37689))/3311	8	11	certified+verified	28	
 53	53	1	(7 + sqrt(53))/2	12.41631417202609516280166	root of +40320*x^4 -294177*x^3 -2304708*x^2 -3117576*x^1 -1162084*x^0	6	1	certified+verified	3	
@@ -36,3 +37,6 @@ D	d_K	h_K	eps0	gamma	closed_form	#M	#classes	status	seconds	notes
 61	61	1	(39 + 5sqrt(61))/2	6.455991848413251273913246	(1405 + 35*sqrt(5185))/608	5	5	certified+verified	4	
 62	248	1	63 + 8sqrt(62)	52.07665145062609136354068	(208468 + 6656*sqrt(589))/7105	6	13	certified+verified	21	multistart missed the maximum; recovered from the B&B (chart 0)
 65	65	2	8 + sqrt(65)	17.06666666666666666666667	256/15	12	12	certified+verified	21	
+66	264	2	65 + 8sqrt(66)	52.0	52	12	17	certified+verified	44	multistart missed the maximum; recovered from the B&B (chart 0)
+69	69	1	(25 + 3sqrt(69))/2	13.1649091645626587509157	(100 + 14*sqrt(115))/19	8	4	certified+verified	3	
+70	280	2	251 + 30sqrt(70)	52.22865445523816505774994	(1582 + 91*sqrt(814))/80	6	5	certified+verified	62	

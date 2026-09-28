@@ -253,11 +253,13 @@ class BranchAndBound:
         return np.array(lo), np.array(hi)
 
     def run(self, chunk=2048, max_boxes=5e7, min_width=1e-13, verbose=False, keep_certificate=False,
-            exact=None, max_elems=2e6):
+            exact=None, max_elems=2e6, init=None, balls=None):
         """Tolerance mode (exact=None): proves sup G <= gamma_low (1 + delta).
         Exact mode, exact = (gamma_star, local_vertex_fn): proves sup G <= gamma_star;
         a box that becomes small is handed to local_vertex_fn(centre), which returns
         (gamma, q_centre, rho) for a nearby vertex (rho = certified ball radius).
+        init = (lo, hi) restricts the run to these boxes of the initial grid
+        (used by run_parallel); balls = certified balls already known.
 
         Work items (lo, hi, vidx) carry the vectors still relevant for their boxes:
         v is dropped below B if inf_B f_v > UB(B) and inf_B N_v >= 1; it can then
@@ -266,11 +268,11 @@ class BranchAndBound:
         inf_B f <= f(c) <= UB(B))."""
         t0 = time.time()
         P = self.P
-        self.balls, self.exact, self.counterexample = [], exact, None
+        self.balls, self.exact, self.counterexample = list(balls or []), exact, None
         self.cert4, self.n_rule4 = [], 0
         thr_exact = _below(exact[0]) if exact is not None else None
         t_hi = 0.5 * math.log(1.0 / (self.gamma_low if exact is None else thr_exact))
-        lo, hi = self.initial_boxes(t_hi)
+        lo, hi = self.initial_boxes(t_hi) if init is None else init
         stack = [(lo, hi, np.arange(len(self.A1)))]
         processed = 0
         counts = np.zeros(4, dtype=np.int64)
@@ -571,3 +573,106 @@ def verify_certificate(bb, threshold, exp_ulps=8):
     un_vol = sum(float(np.prod(h - l, axis=1).sum()) for l, h, _ in bb.unresolved)
     return {"verified": {r: res[r][0] for r in range(5)}, "failed": {r: res[r][1] for r in range(5)},
             "volume_ratio": (vol + un_vol) / region_vol}
+
+
+# ---------------------------------------------------------------------------
+# parallel branch-and-bound over the initial grid (fork-based)
+# ---------------------------------------------------------------------------
+_PAR = {}
+
+
+def _par_task(args):
+    """Worker: run the B&B of _PAR['bb'] on one block of initial boxes."""
+    lo, hi, balls = args
+    bb = _PAR["bb"]
+    bb.gamma_low = _PAR["gamma_low"]
+    bb.overflow = False
+    bb.run(init=(lo, hi), balls=balls, **_PAR["kw"])
+    keep = _PAR["kw"].get("keep_certificate", False)
+    return {"certificate": bb.certificate if keep else None, "cert4": bb.cert4 if keep else [],
+            "balls": bb.balls, "unresolved": bb.unresolved, "stats": bb.stats,
+            "counterexample": bb.counterexample, "overflow": bb.overflow,
+            "gamma_low": bb.gamma_low, "best_point": bb.best_point, "t_hi": bb.t_hi,
+            "n_rule4": bb.n_rule4}
+
+
+def run_parallel(bb, jobs, grid=(8, 8, 2, 2), **kw):
+    """bb.run(**kw) split over `jobs` processes: the initial grid (finer than the
+    serial one) is dealt out block by block to a process pool; certified balls
+    found by finished blocks are handed to the blocks started later.  The
+    results (certificate, balls, unresolved boxes, statistics) are merged into
+    bb exactly as a serial run would leave them, so verify_certificate(bb, ...)
+    applies unchanged (the union of the blocks tiles the region).  Stops early
+    at the first counterexample / overflow.  Needs the 'fork' start method."""
+    import multiprocessing as mp
+    t0 = time.time()
+    exact = kw.get("exact")
+    thr_exact = _below(exact[0]) if exact is not None else None
+    t_hi = 0.5 * math.log(1.0 / (bb.gamma_low if exact is None else thr_exact))
+    lo, hi = bb.initial_boxes(t_hi, n=grid)
+    blocks = [(lo[i:i + 1], hi[i:i + 1]) for i in range(len(lo))]
+    _PAR.clear()
+    _PAR.update(bb=bb, gamma_low=bb.gamma_low, kw=kw)
+    balls = []
+    cert, cert4, unresolved = ([] if kw.get("keep_certificate") else None), [], []
+    counts = np.zeros(5, dtype=np.int64)
+    boxes, n_rule4, stop = 0, 0, None
+    best = (bb.gamma_low, bb.best_point)
+    ctx = mp.get_context("fork")
+    with ctx.Pool(jobs) as pool:
+        pending = []
+        it = iter(blocks)
+
+        def submit():
+            b = next(it, None)
+            if b is not None:
+                pending.append(pool.apply_async(_par_task, ((b[0], b[1], list(balls)),)))
+
+        for _ in range(2 * jobs):
+            submit()
+        while pending:
+            done = [p for p in pending if p.ready()]
+            if not done:
+                time.sleep(0.02)
+                continue
+            pending.remove(done[0])
+            r = done[0].get()
+            for qb in r["balls"]:
+                if not any(np.linalg.norm(qb[0] - b[0]) < 1e-9 for b in balls):
+                    balls.append(qb)
+            if cert is not None and r["certificate"]:
+                cert.extend(r["certificate"])
+            cert4.extend(r["cert4"])
+            unresolved.extend(r["unresolved"])
+            counts += np.array(r["stats"]["discarded_by_rule"], dtype=np.int64)
+            boxes += r["stats"]["boxes"]
+            n_rule4 += r["n_rule4"]
+            if r["gamma_low"] > best[0] and r["best_point"] is not None:
+                best = (r["gamma_low"], r["best_point"])
+            if r["counterexample"] is not None or r["overflow"] or (
+                    exact is not None and r["gamma_low"] > exact[0] * (1 + 1e-12)):
+                stop = r
+                pool.terminate()
+                break
+            submit()
+    bb.balls = balls
+    bb.certificate = cert
+    bb.cert4 = cert4
+    bb.unresolved = unresolved
+    bb.t_hi = t_hi
+    bb.n_rule4 = n_rule4
+    bb.gamma_low, bb.best_point = best
+    bb.counterexample = stop["counterexample"] if stop else None
+    bb.overflow = bool(stop and stop["overflow"])
+    if stop is not None:            # the remaining blocks count as unresolved
+        unresolved.append((lo, hi, np.full(len(lo), np.inf)))
+    un_ub = max([float(np.max(u)) for _, _, u in unresolved], default=-np.inf)
+    bb.stats = {"boxes": boxes, "discarded_by_rule": counts[:4].tolist() + [n_rule4],
+                "time": time.time() - t0, "unresolved": int(sum(len(u) for _, _, u in unresolved)),
+                "vectors": len(bb.vecs), "jobs": jobs}
+    if exact is not None:
+        bb.stats["balls"] = len(balls)
+    base = bb.gamma_low * (1 + bb.delta) * (1 + bb.safety) if exact is None else float(exact[0])
+    bb.gamma_upper = max(base, un_ub * (1 + bb.safety)) if not bb.overflow else float("inf")
+    _PAR.clear()
+    return bb.gamma_upper

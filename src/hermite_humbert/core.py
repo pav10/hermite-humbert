@@ -34,12 +34,12 @@ import numpy as np
 import mpmath
 from fractions import Fraction
 
-from field import RealQuadraticField
+from .field import RealQuadraticField
 
-from humbert import HumbertProblem
-from vertex import VertexFinder
-from certify import BranchAndBound, verify_certificate, _below
-from analysis import classify, classify_global, normal_form, closed_form_gamma, identify, ball_certificate
+from .humbert import HumbertProblem
+from .vertex import VertexFinder
+from .certify import BranchAndBound, verify_certificate, run_parallel, _below
+from .analysis import classify, classify_global, normal_form, closed_form_gamma, identify, ball_certificate
 
 
 def local_vertex_factory(P, VF, dps):
@@ -68,7 +68,7 @@ def local_vertex_factory(P, VF, dps):
 def _problems(D):
     """One HumbertProblem per chart: [O_K^2] if h_K = 1, else one per ideal class
     (a class and its inverse share a chart via Galois)."""
-    from ideals import class_group_charts
+    from .ideals import class_group_charts
     F = RealQuadraticField(D)
     F.check_float_range()
     if F.class_number_is_one():
@@ -78,10 +78,11 @@ def _problems(D):
 
 
 def compute(D, n_samples=3000, n_seeds=24, dps=100, delta=1e-9, exact=True, verify=False,
-            verbose=True, max_boxes=5e7):
+            verbose=True, max_boxes=5e7, jobs=1):
     """Compute gamma_{K,2} for K = Q(sqrt D) (any class number).  Returns a dict
     with the value, closed form, extreme forms found (per chart), and the
-    certificate status.  The certificate covers every chart."""
+    certificate status.  The certificate covers every chart.  jobs > 1 runs the
+    exact-mode branch-and-bound in that many processes (POSIX only)."""
     t0 = time.time()
     problems, h = _problems(D)
     F = problems[0].F
@@ -122,8 +123,12 @@ def compute(D, n_samples=3000, n_seeds=24, dps=100, delta=1e-9, exact=True, veri
             exact_res = {"proved": True, "balls": 0, "stats": [], "counterexample": None}
             for k, P in enumerate(problems):
                 bbx = BranchAndBound(P, float(gstar), delta=0.0)
-                bbx.run(max_boxes=max_boxes, keep_certificate=verify,
-                        exact=(float(gstar), local_vertex_factory(P, VFs[k], dps)))
+                kw = dict(max_boxes=max_boxes, keep_certificate=verify,
+                          exact=(float(gstar), local_vertex_factory(P, VFs[k], dps)))
+                if jobs > 1:
+                    run_parallel(bbx, jobs, **kw)
+                else:
+                    bbx.run(**kw)
                 if bbx.overflow or bbx.gamma_low > float(gstar) * (1 + 1e-12) or bbx.counterexample is not None:
                     pt = bbx.best_point
                     if bbx.counterexample is not None:
@@ -215,7 +220,7 @@ def chart_point(D, p, charts=None, problems=None):
     O_K^2 = c'^{-1} v + c' w, the chart representative c ~ c' (Galois conjugate
     form if the class of c' was dropped), mu with c' = mu c, and change basis by
     (mu^{-1} v | mu w).  Returns (chart index, point in the chart region)."""
-    from ideals import class_group_charts, steinitz_frame, locate_chart, Ideal
+    from .ideals import class_group_charts, steinitz_frame, locate_chart, Ideal
     F = RealQuadraticField(D)
     if charts is None:
         charts, _ = class_group_charts(F)
@@ -292,11 +297,13 @@ def main(argv=None):
     ap.add_argument("--verify", action="store_true",
                     help="record the exact-mode certificate and re-check it with outward rounding")
     ap.add_argument("--quiet", action="store_true")
+    ap.add_argument("--jobs", "-j", type=int, default=1,
+                    help="processes for the branch-and-bound of each field (default 1)")
     a = ap.parse_args(argv)
     rows = []
     for D in a.D:
         r = compute(D, n_samples=a.samples, n_seeds=a.seeds, dps=a.dps, delta=a.delta,
-                    exact=not a.no_exact, verify=a.verify, verbose=not a.quiet)
+                    exact=not a.no_exact, verify=a.verify, verbose=not a.quiet, jobs=a.jobs)
         rows.append(r)
     if len(rows) > 1:
         print("\n%5s %6s  %-22s %-34s %s" % ("D", "d_K", "gamma_{K,2}", "closed form", "status"))

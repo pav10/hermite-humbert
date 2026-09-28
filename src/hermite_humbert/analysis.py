@@ -180,6 +180,24 @@ def normal_form(problem, vert):
 
 
 # ------------------------------------------------------------ identification
+def _findpoly_desc(x, n, **kw):
+    """mpmath.findpoly with coefficients in descending order of powers, on both
+    old (no `asc` argument) and new mpmath versions (descending is deprecated)."""
+    try:
+        c = mpmath.findpoly(x, n, asc=True, **kw)
+    except TypeError:
+        return mpmath.findpoly(x, n, **kw)
+    return c[::-1] if c else c
+
+
+def _horner(c, x):
+    """c[0] x^n + ... + c[n] (descending coefficients)."""
+    r = mpmath.mpf(0)
+    for t in c:
+        r = r * x + t
+    return r
+
+
 def identify(x, max_degree=8, maxcoeff=10 ** 9, dps=None):
     """Minimal integer polynomial of x found by PSLQ (mpmath.findpoly), searched
     by increasing degree, at the working precision of x (>= 50 digits).
@@ -190,7 +208,7 @@ def identify(x, max_degree=8, maxcoeff=10 ** 9, dps=None):
     with mpmath.workdps(dps):
         x = mpmath.mpf(x)
         for n in range(1, max_degree + 1):
-            c = mpmath.findpoly(x, n, maxcoeff=maxcoeff, maxsteps=200000)
+            c = _findpoly_desc(x, n, maxcoeff=maxcoeff, maxsteps=200000)
             if not c:
                 continue
             c = [int(t) for t in c]
@@ -199,7 +217,7 @@ def identify(x, max_degree=8, maxcoeff=10 ** 9, dps=None):
             if c[0] < 0:
                 c = [-t for t in c]
             size = max(abs(t) for t in c)
-            resid = abs(mpmath.polyval(c, x)) / (size * max(1, abs(x)) ** n)
+            resid = abs(_horner(c, x)) / (size * max(1, abs(x)) ** n)
             if resid > mpmath.mpf(10) ** (-(dps - 15)):
                 continue
             if (n + 1) * math.log10(size + 1) > 0.6 * dps:
@@ -312,7 +330,7 @@ def chart_basis(problem):
     F = problem.F
     if problem.chart is None:
         return ((1, 0), (0, 0)), ((0, 0), (1, 0))
-    from ideals import steinitz_frame
+    from .ideals import steinitz_frame
     c = problem.chart.c
     p1 = (c.e, c.f)
     _, w = steinitz_frame(F, p1)

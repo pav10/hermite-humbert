@@ -25,7 +25,7 @@ import itertools
 import numpy as np
 import mpmath
 
-from field import RealQuadraticField
+from .field import RealQuadraticField
 
 
 # ----------------------------------------------------------------------------
@@ -157,7 +157,7 @@ class HumbertProblem:
         # chart: lattice Lambda_c = A (+) B with A = c^{-1}, B = c, translations by T = c^{-2}
         # (chart None = O_K^2, the h_K = 1 setting).  Galois (s >= 0) only if the chart allows it.
         self.chart = chart
-        from ideals import KLattice
+        from .ideals import KLattice
         if chart is None:
             O = KLattice(F, (1, 0), (0, 1))
             self.A = self.B = self.T = O

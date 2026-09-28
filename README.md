@@ -4,25 +4,53 @@ Computes and certifies the Hermite–Humbert constant γ_{K,2} of a real quadrat
 field K = Q(√D) of any class number, together with the extreme forms, following
 and extending Baeza–Coulangeon–Icaza–O'Ryan (2001) and Pohst–Wagner (2005, 2009).
 
+## Installation
+
+Requires Python ≥ 3.9 with numpy, scipy and mpmath (pure Python, no compiler needed).
+
+```bash
+git clone https://github.com/pav10/hermite-humbert.git
+cd hermite-humbert
+python -m venv .venv && source .venv/bin/activate     # optional
+pip install -e ".[test]"
+```
+
+Optional extras: `pip install -e ".[pari]"` (cypari2, used by one cross-check test),
+`".[features]"` (sympy, for `hermite_humbert.features`).
+
 ## Quick start
 
 ```bash
-python hermite_humbert.py 13                  # full report for Q(sqrt 13)
-python hermite_humbert.py 7 11 17 --verify    # several fields + summary table
-python test_hermite_humbert.py fast           # unit tests (~2 min)
-python test_hermite_humbert.py                # + full pipeline on 9 published fields
-python run_sweep.py out.tsv 900 2 3 5 6 7     # batch run, one TSV line per field
+hermite-humbert 13                            # full report for Q(sqrt 13)
+hermite-humbert 7 11 17 --verify              # several fields + summary table
+python -m hermite_humbert 13                  # same, without the console script
+
+hermite-humbert-sweep out.tsv 2-100 -j 4      # parallel batch run over all squarefree D in [2, 100]
+hermite-humbert-sweep out.tsv 46 91 --timeout 0   # no time limit; re-running resumes
+
+pytest -m "not slow"                          # unit tests (~2 min)
+pytest                                        # + full pipeline on the published fields
 ```
 
 ```python
 from hermite_humbert import compute, gamma_of_form
 r = compute(13)                     # value, closed form, extreme forms, certificate status
+r["gamma"], r["classes"][0]["closed_form"][1], r["exact"]["proved"]
 g, vecs, _ = gamma_of_form(5, S1, S2)   # gamma(S) and minimal vectors of any given form
 ```
 
-Requirements: Python ≥ 3.9, numpy, scipy, mpmath. (cypari2 is only used by one
-optional test.)  Options: `--samples`, `--seeds` (multistart), `--dps` (working
-precision, default 60), `--delta` (tolerance-mode accuracy), `--no-exact`, `--verify`.
+CLI options: `--samples`, `--seeds` (multistart), `--dps` (working precision,
+default 100), `--delta` (tolerance-mode accuracy), `--no-exact`, `--verify`
+(record the certificate and re-check it with outward rounding), `--quiet`.
+
+`hermite-humbert-sweep` writes one row per field to the TSV table as soon as the
+field finishes (sorted by D; columns `D, d_K, h_K, eps0, gamma, closed_form, #M,
+#classes, status, seconds, notes`) and the complete result of each field
+(every extreme class with its normal form, minimal vectors, perfection rank,
+eutactic coefficients, certificate statistics) to `fields/D<D>.json` next to it.
+Certified fields are skipped when the command is repeated, so an interrupted
+sweep can simply be restarted; `--timeout` (default 3600 s per field),
+`--jobs`, `--no-verify`, `--redo`.
 
 ## Normalisation
 
@@ -246,6 +274,8 @@ structural features of the critical forms; `features.jsonl` has them for D < 100
 
 ## Files
 
+Package `src/hermite_humbert/`:
+
 | file | contents |
 |---|---|
 | `field.py` | exact arithmetic in O_K = Z[ω], fundamental unit (continued fractions), h_K = 1 test, primitivity, SL₂ completion, elements of bounded norm modulo units |
@@ -254,10 +284,17 @@ structural features of the critical forms; `features.jsonl` has them for D < 100
 | `vertex.py` | LP trust-region ascent, Newton at high precision, perfection rank, eutaxy, multistart |
 | `certify.py` | branch-and-bound (tolerance and exact modes), recorded certificate, outward-rounded re-check |
 | `analysis.py` | equivalence ([PW05, Alg. 11]), normal forms, PSLQ identification, local ball certificate |
-| `hermite_humbert.py` | driver / CLI, `compute`, `gamma_of_form`, `chart_point` |
-| `test_hermite_humbert.py` | 17 tests (incl. soundness of rule 4 and its interval re-check): PARI cross-checks (units, class numbers), enumeration vs brute force, published forms, exactness of V, invariance, chart covering in both directions, pipeline vs published values (40 digits), h = 2 regression, verifier soundness |
-| `run_sweep.py`, `results_*.tsv` | batch runs and their results |
-| `features.py`, `features.jsonl` | feature extraction for the critical forms (patterns) |
+| `core.py` | driver / CLI (`hermite-humbert`), `compute`, `gamma_of_form`, `chart_point` |
+| `sweep.py` | parallel, resumable batch runs (`hermite-humbert-sweep`) |
+| `features.py` | feature extraction for the critical forms (patterns) |
+
+Elsewhere:
+
+| path | contents |
+|---|---|
+| `tests/test_hermite_humbert.py` | 17 pytest tests (incl. soundness of rule 4 and its interval re-check): PARI cross-checks (units, class numbers), enumeration vs brute force, published forms, exactness of V, invariance, chart covering in both directions, pipeline vs published values (40 digits), h = 2 regression, verifier soundness |
+| `results/` | result tables, per-field JSON (`results/fields/`), `features.jsonl` |
+| `.github/workflows/tests.yml` | CI: unit tests on Python 3.9 and 3.12, pipeline tests on 3.12 |
 
 ## Extensions (not implemented)
 

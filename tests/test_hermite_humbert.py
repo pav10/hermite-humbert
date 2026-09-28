@@ -1,9 +1,8 @@
 """
 Tests for the Hermite--Humbert constant code.
 
-    python test_hermite_humbert.py          # all tests, plain runner
-    python test_hermite_humbert.py fast     # skip the slower pipeline runs
-    pytest -q test_hermite_humbert.py       # if pytest is available
+    pytest -m "not slow"      # unit tests (~2 min)
+    pytest                    # + full pipeline on the published fields (~10 min)
 
 Reference values are those of the papers in the project:
   [BCIO01] Baeza, Coulangeon, Icaza, O'Ryan, Exp. Math. 10 (2001) 543-551
@@ -16,14 +15,15 @@ import random
 import sys
 
 import numpy as np
+import pytest
 import mpmath
 
-from field import RealQuadraticField
-from humbert import HumbertProblem, fincke_pohst
-from vertex import VertexFinder
-from certify import BranchAndBound, verify_certificate
-from analysis import equivalence, galois_vectors, identify
-from hermite_humbert import compute, gamma_of_form
+from hermite_humbert.field import RealQuadraticField
+from hermite_humbert.humbert import HumbertProblem, fincke_pohst
+from hermite_humbert.vertex import VertexFinder
+from hermite_humbert.certify import BranchAndBound, verify_certificate
+from hermite_humbert.analysis import equivalence, galois_vectors, identify
+from hermite_humbert.core import compute, gamma_of_form
 
 mpmath.mp.dps = 50
 S = mpmath.sqrt
@@ -59,10 +59,7 @@ def test_class_number_one():
 
 
 def test_class_number_against_pari():
-    try:
-        import cypari2
-    except ImportError:
-        return
+    cypari2 = pytest.importorskip("cypari2")
     pari = cypari2.Pari()
     for D in range(2, 200):
         try:
@@ -185,11 +182,13 @@ def _check(D, expect_new=False):
     return r
 
 
+@pytest.mark.slow
 def test_pipeline_bcio():
     for D in (2, 3, 5):
         _check(D)
 
 
+@pytest.mark.slow
 def test_pipeline_pohst_wagner():
     for D in (6, 7, 11, 13, 17, 21):
         _check(D)
@@ -210,15 +209,12 @@ def test_certificate_detects_false_claim():
 
 # ------------------------------------------------------- class number > 1
 def test_class_group():
-    from ideals import class_group_charts
+    from hermite_humbert.ideals import class_group_charts
     known = {10: 2, 15: 2, 26: 2, 79: 3, 82: 4, 226: 8, 5: 1, 13: 1}
     for D, h in known.items():
         charts, hh = class_group_charts(RealQuadraticField(D))
         assert hh == h, (D, hh)
-    try:
-        import cypari2
-    except ImportError:
-        return
+    cypari2 = pytest.importorskip("cypari2")
     pari = cypari2.Pari()
     for D in range(2, 200):
         try:
@@ -235,7 +231,7 @@ def test_chart_covering():
     """Random forms on O_K^2 are mapped (Steinitz frame of a minimal vector) to a
     highest point of the chart of its content class; the value must agree with
     the independent O_K^2 minimum and with the chart's vector set V."""
-    from ideals import class_group_charts
+    from hermite_humbert.ideals import class_group_charts
     from hermite_humbert import chart_point
     rng = np.random.default_rng(11)
     for D in (10, 79):
@@ -261,8 +257,8 @@ def test_chart_covering():
 def test_chart_pullback():
     """Points of the non-trivial chart regions, written back on O_K^2 through a
     Steinitz basis, have the same minimum (targeted O_K^2 enumeration)."""
-    from ideals import class_group_charts, steinitz_frame
-    from analysis import m_inv
+    from hermite_humbert.ideals import class_group_charts, steinitz_frame
+    from hermite_humbert.analysis import m_inv
     rng = np.random.default_rng(3)
     for D in (82, 15):
         F = RealQuadraticField(D)
@@ -284,6 +280,7 @@ def test_chart_pullback():
                 assert abs(gc - g0) < 1e-7 * g0 and abs(gv[0] - g0) < 1e-7 * g0
 
 
+@pytest.mark.slow
 def test_pipeline_class_number_two():
     """Regression values computed by this code (not in the project papers)."""
     expect = {10: (80 + 16 * S(10)) / 15, 15: (112 + 16 * S(159)) / 25}
@@ -310,18 +307,3 @@ def test_corner_rule_soundness():
     assert bad["failed"][4] > 0
 
 
-if __name__ == "__main__":
-    fast = len(sys.argv) > 1 and sys.argv[1] == "fast"
-    tests = [(n, f) for n, f in sorted(globals().items()) if n.startswith("test_") and callable(f)]
-    failed = 0
-    for n, f in tests:
-        if fast and n.startswith("test_pipeline"):
-            continue
-        try:
-            f()
-            print("PASS", n)
-        except Exception as e:           # noqa
-            failed += 1
-            print("FAIL", n, repr(e))
-    print("%d failed" % failed)
-    sys.exit(1 if failed else 0)

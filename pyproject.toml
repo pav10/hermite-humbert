@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hermite-humbert"
+version = "0.1.0"
+description = "Certified computation of Hermite-Humbert constants of real quadratic fields (binary forms)"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = ["numpy>=1.21", "scipy>=1.7", "mpmath>=1.2"]
+
+[project.optional-dependencies]
+test = ["pytest>=7"]
+pari = ["cypari2"]
+features = ["sympy"]
+
+[project.scripts]
+hermite-humbert = "hermite_humbert.core:main"
+hermite-humbert-sweep = "hermite_humbert.sweep:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["slow: full pipeline runs (minutes)"]

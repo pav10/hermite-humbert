@@ -1,10 +1,10 @@
 """Structural features of the critical forms, for pattern hunting."""
 import sys, json, math, time
 import mpmath
-from field import RealQuadraticField
-from hermite_humbert import _problems
-from vertex import VertexFinder
-from analysis import classify_global, identify, normal_form
+from .field import RealQuadraticField
+from .core import _problems
+from .vertex import VertexFinder
+from .analysis import classify_global, identify, normal_form
 
 def kron(d, n):
     """Kronecker symbol (d/n), d a fundamental discriminant, n >= 1."""
@@ -65,14 +65,15 @@ def features(D, gamma_cert):
             "gamma_over_vol_bound": float(gamma_cert) / vb, "zetaK2": z2, "sumN": sN}
 
 if __name__ == "__main__":
+    # python -m hermite_humbert.features OUT.jsonl RESULTS.tsv D [D ...]
     import csv
     vals = {}
-    for fn in ["results_h1_D_lt_50.tsv", "results_h_gt_1_D_lt_100.tsv"]:
-        for row in csv.DictReader(open(fn), delimiter="\t"):
-            if row["status"] == "certified":
+    with open(sys.argv[2]) as fh:
+        for row in csv.DictReader(fh, delimiter="\t"):
+            if row["status"].startswith("certified"):
                 vals[int(row["D"])] = mpmath.mpf(row["gamma"])
     out = []
-    for D in [int(x) for x in sys.argv[2:]]:
+    for D in [int(x) for x in sys.argv[3:]]:
         t0 = time.time()
         f = features(D, vals[D])
         f["seconds"] = round(time.time() - t0, 1)

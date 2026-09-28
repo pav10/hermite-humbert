@@ -19,7 +19,7 @@ and by units.  Galois maps the chart of C to the chart of C^{-1} = [c^sigma].
 import math
 from fractions import Fraction
 
-from field import RealQuadraticField, _primes_upto
+from .field import RealQuadraticField, _primes_upto
 
 
 def _F(x):

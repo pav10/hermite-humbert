@@ -34,12 +34,12 @@ import numpy as np
 import mpmath
 from fractions import Fraction
 
-from field import RealQuadraticField
+from .field import RealQuadraticField
 
-from humbert import HumbertProblem
-from vertex import VertexFinder
-from certify import BranchAndBound, verify_certificate, _below
-from analysis import classify, classify_global, normal_form, closed_form_gamma, identify, ball_certificate
+from .humbert import HumbertProblem
+from .vertex import VertexFinder
+from .certify import BranchAndBound, verify_certificate, _below
+from .analysis import classify, classify_global, normal_form, closed_form_gamma, identify, ball_certificate
 
 
 def local_vertex_factory(P, VF, dps):
@@ -68,7 +68,7 @@ def local_vertex_factory(P, VF, dps):
 def _problems(D):
     """One HumbertProblem per chart: [O_K^2] if h_K = 1, else one per ideal class
     (a class and its inverse share a chart via Galois)."""
-    from ideals import class_group_charts
+    from .ideals import class_group_charts
     F = RealQuadraticField(D)
     F.check_float_range()
     if F.class_number_is_one():
@@ -215,7 +215,7 @@ def chart_point(D, p, charts=None, problems=None):
     O_K^2 = c'^{-1} v + c' w, the chart representative c ~ c' (Galois conjugate
     form if the class of c' was dropped), mu with c' = mu c, and change basis by
     (mu^{-1} v | mu w).  Returns (chart index, point in the chart region)."""
-    from ideals import class_group_charts, steinitz_frame, locate_chart, Ideal
+    from .ideals import class_group_charts, steinitz_frame, locate_chart, Ideal
     F = RealQuadraticField(D)
     if charts is None:
         charts, _ = class_group_charts(F)

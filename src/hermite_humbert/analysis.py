@@ -312,7 +312,7 @@ def chart_basis(problem):
     F = problem.F
     if problem.chart is None:
         return ((1, 0), (0, 0)), ((0, 0), (1, 0))
-    from ideals import steinitz_frame
+    from .ideals import steinitz_frame
     c = problem.chart.c
     p1 = (c.e, c.f)
     _, w = steinitz_frame(F, p1)

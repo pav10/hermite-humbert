@@ -13,7 +13,6 @@ out are retried (with the new time limit).
 import argparse
 import csv
 import json
-import multiprocessing as mp
 import os
 import signal
 import sys
@@ -104,10 +103,6 @@ def run_field(D, timeout=0, verify=True, details=None, field_jobs=1):
     return D, row
 
 
-def _worker(args):
-    return run_field(*args)
-
-
 def parse_fields(specs):
     """'2-200', '46', '91,95' -> sorted squarefree D > 1."""
     out = set()
@@ -140,6 +135,9 @@ def write_table(path, rows):
 
 
 def main(argv=None):
+    argv = sys.argv[1:] if argv is None else argv
+    if argv and argv[0] == "--child":
+        return _child(argv[1])
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("out", help="TSV results table (created or updated)")
     ap.add_argument("fields", nargs="+", help="D values or ranges, e.g. 2-200 46 91,95")
@@ -176,14 +174,60 @@ def main(argv=None):
         print("%5d  h=%-2s %-28s %-40s %s  %ss" % (D, row["h_K"], row["gamma"], row["closed_form"][:40],
                                                   row["status"], row["seconds"]), flush=True)
 
-    if a.jobs == 1:                 # in-process (lets --field-jobs use its own pool)
-        for args in jobs:
-            record(*run_field(*args))
-        return
-    ctx = mp.get_context("fork" if sys.platform != "win32" else "spawn")
-    with ctx.Pool(a.jobs, maxtasksperchild=1) as pool:
-        for D, row in pool.imap_unordered(_worker, jobs):
+    run_isolated(jobs, a.jobs, a.timeout, record)
+
+
+def run_isolated(jobs, n_parallel, timeout, record, grace=120, poll=1.0):
+    """Run each field in its own Python subprocess, at most n_parallel at a time.
+    The child enforces the time limit itself (SIGALRM, recorded as a timeout row);
+    the parent kills a child that overruns it by more than `grace` seconds (e.g.
+    stuck in C code), and records a child that dies without a result as an
+    error.  Unlike multiprocessing.Pool, a crashed or killed worker can never
+    make the sweep wait forever."""
+    import subprocess
+    import tempfile
+    queue = list(jobs)
+    running = []                     # (proc, D, start, outfile)
+    while queue or running:
+        while queue and len(running) < n_parallel:
+            args = queue.pop(0)
+            out = tempfile.TemporaryFile(mode="w+")
+            cmd = [sys.executable, "-m", "hermite_humbert.sweep", "--child", json.dumps(args)]
+            running.append((subprocess.Popen(cmd, stdout=out, stderr=subprocess.DEVNULL),
+                            args[0], time.time(), out))
+        still = []
+        for proc, D, t0, out in running:
+            rc = proc.poll()
+            elapsed = time.time() - t0
+            if rc is None and timeout and elapsed > timeout + grace:
+                proc.kill()
+                proc.wait()
+                rc = "killed"
+            if rc is None:
+                still.append((proc, D, t0, out))
+                continue
+            row = None
+            out.seek(0)
+            lines = [ln for ln in out.read().splitlines() if ln.startswith("{")]
+            out.close()
+            if rc == 0 and lines:
+                row = json.loads(lines[-1])
+            else:
+                F = RealQuadraticField(D)
+                row = dict(D=D, d_K=F.disc, h_K="-", eps0="?", gamma="-", closed_form="-",
+                           **{"#M": "-", "#classes": "-"}, seconds=round(elapsed), notes="")
+                row["status"] = ("timeout(%ds)" % timeout if rc == "killed"
+                                 else "error:worker exited with code %s" % rc)
             record(D, row)
+        running = still
+        if running:
+            time.sleep(poll)
+
+
+def _child(argjson):
+    D, timeout, verify, details, field_jobs = json.loads(argjson)
+    _, row = run_field(D, timeout, verify, details, field_jobs)
+    print(json.dumps(row), flush=True)
 
 
 if __name__ == "__main__":

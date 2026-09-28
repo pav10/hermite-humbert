@@ -127,7 +127,7 @@ exists (then c1·c2 = 1).
   lost Σλ = 1 at the 10⁻⁸ level through cancellation, which made it unsound on tiny
   boxes; it was caught by a disagreement with an exact-mode run, fixed, and the
   interval re-check would reject such a certificate.  All results in
-  `results_h1_D_lt_50.tsv` and `results_h_gt_1_D_lt_100.tsv` predate rule 4.)
+  `results/results_h1_D_lt_50.tsv` and `results/results_h_gt_1_D_lt_100.tsv` predate rule 4.)
 - *Numerical, not formally verified:* the maximising vertex (Newton at 60 digits,
   no interval Newton/Kantorovich), the ball radius (κ via qhull in double precision
   from 60-digit gradients, safety factor 0.9), and the closed forms (PSLQ, not
@@ -171,6 +171,20 @@ from different charts are compared after mapping their minimal vectors back to
 O_K²; `chart_point(D, p)` maps any form to its chart.  Tests check the covering in
 both directions against the chart-independent O_K² minimum.
 
+## Recomputation of all squarefree D ≤ 300 (current code)
+
+`results/gamma_K2.tsv` (one row per field) and `results/fields/D<D>.json` (full
+results) are being produced by
+
+    hermite-humbert-sweep results/gamma_K2.tsv 2-300 -j 4 --timeout 600        # phase 1
+    hermite-humbert-sweep results/gamma_K2.tsv <timed-out D> -j 1 --field-jobs 4 --timeout 0   # phase 2
+
+with exact mode and the outward-rounded re-check for every field.  Fields whose
+status is `timeout(...)` are not certified yet (mostly large fundamental units).
+`python -m hermite_humbert.tables results/gamma_K2.tsv` renders the table as
+Markdown.  The tables below are from the original runs and are kept for reference;
+the values agree with the recomputation wherever both exist.
+
 ## Results (h_K = 1, D < 50; all certified in exact mode with `--verify`)
 
 | D | ε₀ | γ_{K,2} | closed form | source |
@@ -200,7 +214,7 @@ both directions against the chart-independent O_K² minimum.
 
 "Not in the project papers": PW09 mentions a table for further fields at
 math.tu-berlin.de/~wagner/HF.pdf, which was not checked.  Per-field details
-(number of minimal vectors, extreme classes, timings) are in `results_h1_D_lt_50.tsv`
+(number of minimal vectors, extreme classes, timings) are in `results/results_h1_D_lt_50.tsv`
 (computed with the previous version of the code; the certificates remain valid, and
 the test suite re-derives the nine published values with the current version).
 
@@ -243,7 +257,7 @@ None of these is in the project papers (BCIO01, PW05, PW09 treat h_K = 1 only).
 | 91 | 2 | 1574+165√91 | — | not finished (5-minute limit) |
 | 95 | 2 | 39+4√95 | 101.347191421516 | not found by PSLQ |
 
-Per-field details are in `results_h_gt_1_D_lt_100.tsv`.  The quartic/"not found"
+Per-field details are in `results/results_h_gt_1_D_lt_100.tsv`.  The quartic/"not found"
 entries are certified numerically to 100 digits; only the closed form is missing.
 
 Q(√10) shows why several charts are needed: its critical form has minimal vectors
@@ -268,9 +282,9 @@ and a further extreme form has γ ≈ 7.93430.  Seven of the 21 values above are
 | 227 | 1 | 169.333333333333 | 508/3 | 12 |
 | 257 | 3 | 52.2095910882804 | not found by PSLQ | 6 |
 
-(`results_more.tsv`; D = 102, 123, 227 belong to the family D = n² + 2, whose h = 1
+(`results/results_more.tsv`; D = 102, 123, 227 belong to the family D = n² + 2, whose h = 1
 members D = 3, 6, 11, 38, 83, 227 all have rational γ.  `features.py` extracts
-structural features of the critical forms; `features.jsonl` has them for D < 100.)
+structural features of the critical forms; `results/features.jsonl` has them for D < 100.)
 
 ## Files
 

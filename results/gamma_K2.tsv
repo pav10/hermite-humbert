@@ -41,3 +41,5 @@ D	d_K	h_K	eps0	gamma	closed_form	#M	#classes	status	seconds	notes
 69	69	1	(25 + 3sqrt(69))/2	13.1649091645626587509157	(100 + 14*sqrt(115))/19	8	4	certified+verified	3	
 70	280	2	251 + 30sqrt(70)	52.22865445523816505774994	(1582 + 91*sqrt(814))/80	6	5	certified+verified	62	
 73	73	1	1068 + 125sqrt(73)	4.976526100993567055623472	(366 + 6*sqrt(7081))/175	5	8	certified+verified	28	
+74	296	2	43 + 5sqrt(74)	47.85009495413274598714405	?	6	14	certified+verified	36	
+77	77	1	(9 + sqrt(77))/2	17.62622085288656397594633	root of +98040*x^4 -1586893*x^3 -2947868*x^2 +8324316*x^1 -4008004*x^0	6	5	certified+verified	4	

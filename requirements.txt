@@ -1,0 +1,4 @@
+numpy
+scipy
+mpmath
+# optional (one test only): cypari2

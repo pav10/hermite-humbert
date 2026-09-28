@@ -94,4 +94,15 @@ D	d_K	h_K	eps0	gamma	closed_form	#M	#classes	status	seconds	notes
 157	157	1	(213 + 17sqrt(157))/2	20.81604327737706883333666	?	5	7	certified+verified	14	
 158	632	-	7743 + 616sqrt(158)	-	-	-	-	timeout(600s)	600	
 159	636	-	1324 + 105sqrt(159)	-	-	-	-	timeout(600s)	600	
+161	161	-	11775 + 928sqrt(161)	-	-	-	-	timeout(600s)	600	
 165	165	2	(13 + sqrt(165))/2	41.7210636757641080385794	(6237 + 63*sqrt(17985))/352	6	8	certified+verified	10	
+167	668	1	168 + 13sqrt(167)	129.3333333333333333333333	388/3	12	9	certified+verified	136	multistart missed the maximum; recovered from the B&B (chart 0); multistart missed the maximum; recovered from the B&B (chart 0); multistart missed the maximum; recovered from the B&B (chart 0)
+170	680	4	13 + sqrt(170)	158.8240744314336403949918	?	5	44	certified+verified	88	
+173	173	1	(13 + sqrt(173))/2	35.02241481784980682016859	(34655 + 551*sqrt(9169))/2496	6	13	certified+verified	12	
+174	696	-	1451 + 110sqrt(174)	-	-	-	-	timeout(600s)	600	
+177	177	-	62423 + 4692sqrt(177)	-	-	-	-	timeout(600s)	600	
+178	712	-	1601 + 120sqrt(178)	-	-	-	-	timeout(600s)	600	
+179	716	-	4190210 + 313191sqrt(179)	-	-	-	-	timeout(600s)	602	
+181	181	1	(1305 + 97sqrt(181))/2	17.9196875951156437113957	root of +157976*x^4 +166635*x^3 -34771032*x^2 -299589840*x^1 -714492900*x^0	6	9	certified+verified	27	
+182	728	2	27 + 2sqrt(182)	176.6982214495062442193797	(417079488 + 1763200*sqrt(1244390))/13491751	6	17	certified+verified	64	
+185	185	2	68 + 5sqrt(185)	36.12769769502906997511263	?	5	8	certified+verified	32	

@@ -40,3 +40,4 @@ D	d_K	h_K	eps0	gamma	closed_form	#M	#classes	status	seconds	notes
 66	264	2	65 + 8sqrt(66)	52.0	52	12	17	certified+verified	44	multistart missed the maximum; recovered from the B&B (chart 0)
 69	69	1	(25 + 3sqrt(69))/2	13.1649091645626587509157	(100 + 14*sqrt(115))/19	8	4	certified+verified	3	
 70	280	2	251 + 30sqrt(70)	52.22865445523816505774994	(1582 + 91*sqrt(814))/80	6	5	certified+verified	62	
+73	73	1	1068 + 125sqrt(73)	4.976526100993567055623472	(366 + 6*sqrt(7081))/175	5	8	certified+verified	28	

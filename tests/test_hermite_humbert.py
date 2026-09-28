@@ -307,3 +307,14 @@ def test_corner_rule_soundness():
     assert bad["failed"][4] > 0
 
 
+
+
+def test_parallel_branch_and_bound():
+    """run_parallel must produce a certificate that verifies (tiling + all rules)
+    and the same value as the serial run."""
+    for D in (13, 10):
+        r = compute(D, verbose=False, exact=True, verify=True, n_samples=2000, n_seeds=16, jobs=2)
+        assert r["exact"]["proved"], D
+        for ver in r["exact"]["verification"]:
+            assert sum(ver["failed"].values()) == 0 and abs(ver["volume_ratio"] - 1) < 1e-9
+    assert abs(r["gamma"] - (80 + 16 * S(10)) / 15) < mpmath.mpf(10) ** -40

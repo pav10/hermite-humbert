@@ -1,6 +1,6 @@
 # Hermite–Humbert constants γ_{K,2}, K = Q(√D)
 
-Generated from `gamma_K2.tsv` by `python -m hermite_humbert.tables`. All squarefree D in [2, 299] were attempted: 135 certified (exact mode, certificate re-checked with outward rounding), 45 open.
+Generated from `gamma_K2.tsv` by `python -m hermite_humbert.tables`. All squarefree D in [2, 299] were attempted: 137 certified (exact mode, certificate re-checked with outward rounding), 43 open.
 
 γ is given to 25 significant digits; the per-field JSON files in `fields/` hold 50 digits, every extreme class found, the normal forms and minimal vectors.  `#M` = number of minimal vectors (up to units) of the critical form, `#cl` = number of GL₂(O_K)-classes of extreme forms found (the list of non-critical ones is not certified complete).
 
@@ -88,6 +88,7 @@ Generated from `gamma_K2.tsv` by `python -m hermite_humbert.tables`. All squaref
 | 149 | 149 | 1 | (61 + 5sqrt(149))/2 | 26.79510985900474168817202 | not found by PSLQ | 5 | 7 | 12 |
 | 155 | 620 | 2 | 249 + 20sqrt(155) | 125.8352756055155374035021 | not found by PSLQ | 6 | 7 | 111 |
 | 157 | 157 | 1 | (213 + 17sqrt(157))/2 | 20.81604327737706883333666 | not found by PSLQ | 5 | 7 | 14 |
+| 158 | 632 | 1 | 7743 + 616sqrt(158) | 109.1031799210700449288784 | sqrt((4075214447 + 7356085·sqrt(258409))/656496) | 6 | 22 | 1241 |
 | 159 | 636 | 2 | 1324 + 105sqrt(159) | 111.1702127659574468085106 | 5225/47 | 8 | 30 | 362 |
 | 165 | 165 | 2 | (13 + sqrt(165))/2 | 41.7210636757641080385794 | (6237 + 63·sqrt(17985))/352 | 6 | 8 | 10 |
 | 167 | 668 | 1 | 168 + 13sqrt(167) | 129.3333333333333333333333 | 388/3 | 12 | 9 | 136 |
@@ -99,6 +100,7 @@ Generated from `gamma_K2.tsv` by `python -m hermite_humbert.tables`. All squaref
 | 182 | 728 | 2 | 27 + 2sqrt(182) | 176.6982214495062442193797 | (417079488 + 1763200·sqrt(1244390))/13491751 | 6 | 17 | 64 |
 | 183 | 732 | 2 | 487 + 36sqrt(183) | 109.0 | 109 | 8 | 11 | 293 |
 | 185 | 185 | 2 | 68 + 5sqrt(185) | 36.12769769502906997511263 | not found by PSLQ | 5 | 8 | 32 |
+| 186 | 744 | 2 | 7501 + 550sqrt(186) | 101.0101010101010101010101 | 10000/99 | 6 | 26 | 2101 |
 | 187 | 748 | 2 | 1682 + 123sqrt(187) | 105.3970987393040026441217 | not found by PSLQ | 5 | 34 | 734 |
 | 194 | 776 | 2 | 195 + 14sqrt(194) | 146.1240310077519379844961 | 18850/129 | 8 | 15 | 152 |
 | 195 | 780 | 4 | 14 + sqrt(195) | 190.9035758923594004818039 | not found by PSLQ | 6 | 34 | 90 |
@@ -159,13 +161,11 @@ Generated from `gamma_K2.tsv` by `python -m hermite_humbert.tables`. All squaref
 | 139 | 556 | ? | error:worker exited with code -9 |  |
 | 151 | 604 | ? | error:worker exited with code -9 |  |
 | 154 | 616 | 21295 + 1716sqrt(154) | open (timeout(600s)) |  |
-| 158 | 632 | 7743 + 616sqrt(158) | open (timeout(600s)) |  |
 | 161 | 161 | 11775 + 928sqrt(161) | open (timeout(600s)) |  |
 | 163 | 652 | ? | error:worker exited with code -9 |  |
 | 166 | 664 | ? | error:worker exited with code -9 |  |
 | 177 | 177 | 62423 + 4692sqrt(177) | open (timeout(600s)) |  |
 | 179 | 716 | 4190210 + 313191sqrt(179) | open (timeout(600s)) |  |
-| 186 | 744 | 7501 + 550sqrt(186) | open (timeout(600s)) |  |
 | 190 | 760 | 52021 + 3774sqrt(190) | open (timeout(600s)) |  |
 | 191 | 764 | 8994000 + 650783sqrt(191) | open (timeout(600s)) |  |
 | 193 | 193 | 1764132 + 126985sqrt(193) | open (timeout(600s)) |  |

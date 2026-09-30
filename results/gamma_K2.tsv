@@ -94,7 +94,7 @@ D	d_K	h_K	eps0	gamma	closed_form	#M	#classes	status	seconds	notes
 154	616	-	21295 + 1716sqrt(154)	-	-	-	-	timeout(600s)	601	
 155	620	2	249 + 20sqrt(155)	125.8352756055155374035021	?	6	7	certified+verified	111	
 157	157	1	(213 + 17sqrt(157))/2	20.81604327737706883333666	?	5	7	certified+verified	14	
-158	632	-	7743 + 616sqrt(158)	-	-	-	-	timeout(600s)	600	
+158	632	1	7743 + 616sqrt(158)	109.1031799210700449288784	sqrt((4075214447 + 7356085*sqrt(258409))/656496)	6	22	certified+verified	1241	multistart missed the maximum; recovered from the B&B (chart 0); multistart missed the maximum; recovered from the B&B (chart 1)
 159	636	2	1324 + 105sqrt(159)	111.1702127659574468085106	5225/47	8	30	certified+verified	362	
 161	161	-	11775 + 928sqrt(161)	-	-	-	-	timeout(600s)	600	
 163	652	-	?	-	-	-	-	error:worker exited with code -9	139	
@@ -111,7 +111,7 @@ D	d_K	h_K	eps0	gamma	closed_form	#M	#classes	status	seconds	notes
 182	728	2	27 + 2sqrt(182)	176.6982214495062442193797	(417079488 + 1763200*sqrt(1244390))/13491751	6	17	certified+verified	64	
 183	732	2	487 + 36sqrt(183)	109.0	109	8	11	certified+verified	293	
 185	185	2	68 + 5sqrt(185)	36.12769769502906997511263	?	5	8	certified+verified	32	
-186	744	-	7501 + 550sqrt(186)	-	-	-	-	timeout(600s)	600	
+186	744	2	7501 + 550sqrt(186)	101.0101010101010101010101	10000/99	6	26	certified+verified	2101	
 187	748	2	1682 + 123sqrt(187)	105.3970987393040026441217	?	5	34	certified+verified	734	
 190	760	-	52021 + 3774sqrt(190)	-	-	-	-	timeout(600s)	603	
 191	764	-	8994000 + 650783sqrt(191)	-	-	-	-	timeout(600s)	603	

@@ -449,7 +449,97 @@ class BranchAndBound:
 # ---------------------------------------------------------------------------
 # independent re-check of a recorded certificate with outward rounding
 # ---------------------------------------------------------------------------
-def verify_certificate(bb, threshold, exp_ulps=8):
+def _rule4_float(bb, lo, hi, idx, lam, thr, exp_ulps=8, log_ulps=4):
+    """Vectorised re-check of rule-4 boxes in double precision with rigorous
+    error bounds (same model as rules 0-3: IEEE round-to-nearest, |fl(x op y) -
+    x op y| <= u |x op y|, embeddings of the witness vectors within 8u, exp within
+    exp_ulps ulp, and log within log_ulps ulp).  Every computed quantity carries an
+    upper bound on its absolute error; a box is accepted only if the resulting
+    upper bound for  (sum lam phi + lin) / sum lam + hterm  (the same bound as the
+    interval check) is below a lower bound for log(thr).  Returns a boolean
+    array; False only means "not confirmed here" (the caller then uses the
+    interval check), never "rejected"."""
+    u = 2.0 ** -53
+    ee = 8 * u
+    eu = exp_ulps * u
+    F = bb.P.F
+    k = idx.shape[1]
+    uniq = np.unique(idx)
+    E = np.array([F.emb(bb.vecs[int(i)][0]) + F.emb(bb.vecs[int(i)][1]) for i in uniq])  # a1, a2, b1, b2
+    pos = np.searchsorted(uniq, idx)
+    a1, a2, b1, b2 = E[pos, 0], E[pos, 1], E[pos, 2], E[pos, 3]            # (nb, k)
+    lam = np.asarray(lam, dtype=float)
+    c = 0.5 * (lo + hi)
+    w = np.maximum(hi - c, c - lo) * (1 + 4 * u)                           # half-widths, rounded up
+    x1, x2, sc, tc = c[:, 0:1], c[:, 1:2], c[:, 2:3], c[:, 3:4]
+    arg1, arg2 = tc - sc, tc + sc                                          # log y1, log y2 (err <= u|.|)
+    y1, y2 = np.exp(arg1), np.exp(arg2)
+    ey1 = eu + 1.01 * u * np.abs(arg1) + 2 * u                             # relative errors of y1, y2
+    ey2 = eu + 1.01 * u * np.abs(arg2) + 2 * u
+    U = arg1 + arg2
+    eU = u * (np.abs(arg1) + np.abs(arg2)) + u * np.abs(U)
+
+    def piece(a, b, x, y, ey):
+        bx = b * x
+        L = a + bx
+        eL = 1.01 * (ee + 3 * u) * (np.abs(a) + np.abs(bx))
+        by = b * y
+        T = by * by
+        eTr = 1.01 * (2 * (ee + ey + u) + 2 * u)                            # relative error of T
+        Q = L * L + T
+        eQ = 1.01 * (2 * np.abs(L) * eL + eL * eL + 2 * u * L * L + T * eTr + 2 * u * Q)
+        Qlo = Q - eQ
+        with np.errstate(divide="ignore", invalid="ignore"):
+            logQ = np.log(Q)
+            elog = eQ / Qlo + log_ulps * u * np.abs(logQ) + 1e-300
+            gL = 2 * b * L / Q
+            egL = 1.01 * (2 * np.abs(b) * (1 + ee) * (eL / Qlo + (np.abs(L) + eL) * eQ / (Q * Qlo))
+                          + np.abs(gL) * (ee + 4 * u))
+            r = 2 * T / Q
+            gT = r - 1
+            egT = 1.01 * (2 * (T * eTr / Qlo + T * (1 + eTr) * eQ / (Q * Qlo)) + 4 * u * (np.abs(r) + 1))
+        return logQ, elog, gL, egL, gT, egT, Qlo
+
+    lq1, el1, g1, eg1, g3, eg3, Q1lo = piece(a1, b1, x1, y1, ey1)
+    lq2, el2, g2, eg2, g4, eg4, Q2lo = piece(a2, b2, x2, y2, ey2)
+    phi = lq1 + lq2 - U
+    ephi = el1 + el2 + eU + 3 * u * (np.abs(lq1) + np.abs(lq2) + np.abs(U))
+    fk = (k + 2) * u
+    S = lam.sum(1)
+    S_lo, S_hi = S * (1 - fk), S * (1 + fk)
+    Phi = (lam * phi).sum(1)
+    ePhi = (lam * ephi).sum(1) + fk * (lam * np.abs(phi)).sum(1)
+    G, eG = [], []
+    for g, eg in ((g1, eg1), (g2, eg2), (g3, eg3), (g4, eg4)):
+        G.append((lam * g).sum(1))
+        eG.append((lam * eg).sum(1) + fk * (lam * np.abs(g)).sum(1))
+    Gp, Gm = G[2] + G[3], G[3] - G[2]
+    lin = ((np.abs(G[0]) + eG[0]) * w[:, 0] + (np.abs(G[1]) + eG[1]) * w[:, 1]
+           + (np.abs(Gp) + eG[2] + eG[3] + 2 * u * np.abs(Gp)) * w[:, 3]
+           + (np.abs(Gm) + eG[2] + eG[3] + 2 * u * np.abs(Gm)) * w[:, 2]) * (1 + 8 * u)
+    num = Phi + ePhi + lin
+    num = num + 4 * u * (np.abs(Phi) + lin)
+    with np.errstate(divide="ignore", invalid="ignore"):
+        term = np.where(num >= 0, num / S_lo, num / S_hi)
+    term = term + 4 * u * np.abs(term)
+    am1 = lo[:, 3] - hi[:, 2]
+    am2 = lo[:, 3] + lo[:, 2]
+    ymin1 = np.exp(am1) * (1 - eu - 1.01 * u * np.abs(am1) - 2 * u)       # lower bounds
+    ymin2 = np.exp(am2) * (1 - eu - 1.01 * u * np.abs(am2) - 2 * u)
+    kap = 8.0 / (3.0 * math.sqrt(3.0)) * (1 + 8 * u)
+    wu = (w[:, 2] + w[:, 3]) * (1 + 2 * u)
+    with np.errstate(divide="ignore", invalid="ignore"):
+        hterm = (2 * w[:, 0] ** 2 / ymin1 ** 2 + 2 * kap * w[:, 0] * wu / ymin1 + wu ** 2
+                 + 2 * w[:, 1] ** 2 / ymin2 ** 2 + 2 * kap * w[:, 1] * wu / ymin2 + wu ** 2) / 2 * (1 + 32 * u)
+    bound = term + hterm
+    lt = math.log(thr)
+    logthr_lo = lt - 4 * u * abs(lt) - 1e-300
+    ok = ((S_lo > 0) & np.all(Q1lo > 0, axis=1) & np.all(Q2lo > 0, axis=1)
+          & (ymin1 > 0) & (ymin2 > 0) & np.isfinite(bound) & (bound <= logthr_lo))
+    return ok
+
+
+def verify_certificate(bb, threshold, exp_ulps=8, float_rule4=True):
     """Re-check every discarded box of bb.certificate with outward rounding,
     independently of the B&B code path:
       - embeddings a_j, b_j of the witness vectors are recomputed from the
@@ -525,7 +615,9 @@ def verify_certificate(bb, threshold, exp_ulps=8):
                     ok = up(q1 * q2) < 1.0
             res[r][0] += int(ok.sum())
             res[r][1] += int((~ok).sum())
-    # rule 4 (corner bound), re-checked in interval arithmetic (mpmath.iv)
+    # rule 4 (corner bound): a vectorised float check with rigorous error bounds
+    # (_rule4_float) first; boxes it cannot confirm are re-checked in interval
+    # arithmetic (mpmath.iv), so every box gets at least the interval check's rigour
     res[4] = [0, 0]
     if getattr(bb, "cert4", None):
         from mpmath import iv, mp
@@ -537,9 +629,12 @@ def verify_certificate(bb, threshold, exp_ulps=8):
         logthr = iv.log(iv.mpf(thr)).a
         for lo, hi, idx, lam in bb.cert4:
             vol += float(np.prod(hi - lo, axis=1).sum())
-            for b in range(len(lo)):
+            okf = _rule4_float(bb, lo, hi, idx, lam, thr, exp_ulps) if float_rule4 else np.zeros(len(lo), bool)
+            res[4][0] += int(okf.sum())
+            for b in np.where(~okf)[0]:
                 c = 0.5 * (lo[b] + hi[b])                    # any expansion point in the box
-                w = [iv.mpf(max(hi[b][j] - c[j], c[j] - lo[b][j])) for j in range(4)]
+                # half-widths rounded up (the float subtraction may round down)
+                w = [iv.mpf(max(hi[b][j] - c[j], c[j] - lo[b][j])) * (1 + iv.mpf(2) ** -51) for j in range(4)]
                 x1, x2, sc, tc = [iv.mpf(float(t)) for t in c]
                 y1, y2 = iv.exp(tc - sc), iv.exp(tc + sc)
                 ymin1 = iv.exp(iv.mpf(lo[b][3]) - iv.mpf(hi[b][2]))

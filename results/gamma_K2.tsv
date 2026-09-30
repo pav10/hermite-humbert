@@ -42,7 +42,7 @@ D	d_K	h_K	eps0	gamma	closed_form	#M	#classes	status	seconds	notes
 67	268	-	48842 + 5967sqrt(67)	-	-	-	-	timeout(3600s)	3600	
 69	69	1	(25 + 3sqrt(69))/2	13.1649091645626587509157	(100 + 14*sqrt(115))/19	8	4	certified+verified	3	
 70	280	2	251 + 30sqrt(70)	52.22865445523816505774994	(1582 + 91*sqrt(814))/80	6	5	certified+verified	62	
-71	284	-	3480 + 413sqrt(71)	-	-	-	-	timeout(3600s)	3600	
+71	284	1	3480 + 413sqrt(71)	50.07925884535043890703911	(1274675 - 425*sqrt(857609))/17594	5	12	certified+verified	1081	
 73	73	1	1068 + 125sqrt(73)	4.976526100993567055623472	(366 + 6*sqrt(7081))/175	5	8	certified+verified	28	
 74	296	2	43 + 5sqrt(74)	47.85009495413274598714405	?	6	14	certified+verified	36	
 77	77	1	(9 + sqrt(77))/2	17.62622085288656397594633	root of +98040*x^4 -1586893*x^3 -2947868*x^2 +8324316*x^1 -4008004*x^0	6	5	certified+verified	4	
@@ -63,7 +63,7 @@ D	d_K	h_K	eps0	gamma	closed_form	#M	#classes	status	seconds	notes
 102	408	2	101 + 10sqrt(102)	65.78139371412541068410852	?	5	14	certified+verified	64	
 103	412	-	227528 + 22419sqrt(103)	-	-	-	-	timeout(600s)	600	
 105	105	2	41 + 4sqrt(105)	25.6	128/5	20	11	certified+verified	33	
-106	424	-	4005 + 389sqrt(106)	-	-	-	-	timeout(600s)	600	
+106	424	2	4005 + 389sqrt(106)	49.64822447367066369731992	(5488 + 196*sqrt(2279))/299	6	26	certified+verified	404	
 107	428	1	962 + 93sqrt(107)	89.33333333333333333333333	268/3	12	7	certified+verified	77	multistart missed the maximum; recovered from the B&B (chart 0)
 109	109	1	(261 + 25sqrt(109))/2	9.542016846812386988658475	root of +73568*x^4 -880033*x^3 +893900*x^2 +9719640*x^1 -19448100*x^0	6	6	certified+verified	8	
 110	440	2	21 + 2sqrt(110)	90.91428571428571428571429	3182/35	8	14	certified+verified	44	
@@ -159,7 +159,7 @@ D	d_K	h_K	eps0	gamma	closed_form	#M	#classes	status	seconds	notes
 258	1032	2	257 + 16sqrt(258)	204.3313609467455621301775	34532/169	8	12	certified+verified	273	multistart missed the maximum; recovered from the B&B (chart 0); multistart missed the maximum; recovered from the B&B (chart 0)
 259	1036	-	847225 + 52644sqrt(259)	-	-	-	-	timeout(600s)	601	
 263	1052	-	139128 + 8579sqrt(263)	-	-	-	-	timeout(600s)	600	
-265	265	-	6072 + 373sqrt(265)	-	-	-	-	timeout(600s)	606	
+265	265	2	6072 + 373sqrt(265)	34.11495928280415260166428	?	6	23	certified+verified	375	
 266	1064	2	685 + 42sqrt(266)	146.6837585305355713275827	?	6	52	certified+verified	669	
 267	1068	2	2402 + 147sqrt(267)	133.152405871109804672629	?	6	43	certified+verified	1299	
 269	269	1	82 + 5sqrt(269)	49.50768413754912148901791	?	5	12	certified+verified	28	

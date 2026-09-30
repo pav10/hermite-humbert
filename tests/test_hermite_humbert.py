@@ -333,3 +333,27 @@ def test_sweep_cli(tmp_path):
     assert (tmp_path / "fields" / "D13.json").exists()
     sweep_main([str(out), "5,13,46", "--timeout", "15"])      # nothing left to do
     assert len(list(csv.DictReader(open(out), delimiter="\t"))) == 3
+
+
+def test_parallel_block_death_is_retried(monkeypatch, tmp_path):
+    """A block whose process dies is retried (and never hangs the run); if it
+    keeps dying it is left unresolved, so the proof fails instead of passing."""
+    import os
+    from hermite_humbert import certify
+    orig = certify._par_task
+
+    def die_once(args):
+        # first attempt of every block dies (marker file per block), the retry succeeds
+        marker = tmp_path / ("block_%s" % "_".join("%.12g" % x for x in args[0][0]))
+        if not marker.exists():
+            marker.touch()
+            os._exit(1)
+        return orig(args)
+    monkeypatch.setattr(certify, "_par_task", die_once)
+    r = compute(13, verbose=False, exact=True, verify=True, n_samples=2000, n_seeds=16, jobs=2)
+    assert r["exact"]["proved"]
+    assert all(st.get("lost_blocks", 0) == 0 for st in r["exact"]["stats"])
+    # blocks that always die: not proved, and no hang
+    monkeypatch.setattr(certify, "_par_task", lambda args: os._exit(1))
+    r = compute(13, verbose=False, exact=True, verify=False, n_samples=2000, n_seeds=16, jobs=2)
+    assert not r["exact"]["proved"]

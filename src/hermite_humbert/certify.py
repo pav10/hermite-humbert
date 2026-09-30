@@ -596,6 +596,21 @@ def _par_task(args):
             "n_rule4": bb.n_rule4}
 
 
+def _par_child(args, conn):
+    """Forked process for one block: send the result (or the error) and exit."""
+    import os
+    try:
+        conn.send(_par_task(args))
+    except BaseException as e:          # noqa: report instead of dying silently
+        try:
+            conn.send({"error": repr(e)})
+        except Exception:
+            pass
+    finally:
+        conn.close()
+        os._exit(0)
+
+
 def run_parallel(bb, jobs, grid=(8, 8, 2, 2), **kw):
     """bb.run(**kw) split over `jobs` processes: the initial grid (finer than the
     serial one) is dealt out block by block to a process pool; certified balls
@@ -603,7 +618,11 @@ def run_parallel(bb, jobs, grid=(8, 8, 2, 2), **kw):
     results (certificate, balls, unresolved boxes, statistics) are merged into
     bb exactly as a serial run would leave them, so verify_certificate(bb, ...)
     applies unchanged (the union of the blocks tiles the region).  Stops early
-    at the first counterexample / overflow.  Needs the 'fork' start method."""
+    at the first counterexample / overflow.  Each block runs in its own forked
+    process (not a multiprocessing.Pool, which waits forever for a task whose
+    worker died): a block whose process dies is retried once and otherwise left
+    unresolved, so the certificate fails rather than the run hanging.  Needs the
+    'fork' start method."""
     import multiprocessing as mp
     t0 = time.time()
     exact = kw.get("exact")
@@ -619,42 +638,71 @@ def run_parallel(bb, jobs, grid=(8, 8, 2, 2), **kw):
     boxes, n_rule4, stop = 0, 0, None
     best = (bb.gamma_low, bb.best_point)
     ctx = mp.get_context("fork")
-    with ctx.Pool(jobs) as pool:
-        pending = []
-        it = iter(blocks)
+    queue = [(b, 0) for b in blocks]          # (block, attempts so far)
+    running = []                              # (process, connection, block, attempts)
+    lost = 0
 
-        def submit():
-            b = next(it, None)
-            if b is not None:
-                pending.append(pool.apply_async(_par_task, ((b[0], b[1], list(balls)),)))
+    def merge(r):
+        nonlocal boxes, n_rule4, best, counts
+        for qb in r["balls"]:
+            if not any(np.linalg.norm(qb[0] - b[0]) < 1e-9 for b in balls):
+                balls.append(qb)
+        if cert is not None and r["certificate"]:
+            cert.extend(r["certificate"])
+        cert4.extend(r["cert4"])
+        unresolved.extend(r["unresolved"])
+        counts += np.array(r["stats"]["discarded_by_rule"], dtype=np.int64)
+        boxes += r["stats"]["boxes"]
+        n_rule4 += r["n_rule4"]
+        if r["gamma_low"] > best[0] and r["best_point"] is not None:
+            best = (r["gamma_low"], r["best_point"])
 
-        for _ in range(2 * jobs):
-            submit()
-        while pending:
-            done = [p for p in pending if p.ready()]
-            if not done:
-                time.sleep(0.02)
-                continue
-            pending.remove(done[0])
-            r = done[0].get()
-            for qb in r["balls"]:
-                if not any(np.linalg.norm(qb[0] - b[0]) < 1e-9 for b in balls):
-                    balls.append(qb)
-            if cert is not None and r["certificate"]:
-                cert.extend(r["certificate"])
-            cert4.extend(r["cert4"])
-            unresolved.extend(r["unresolved"])
-            counts += np.array(r["stats"]["discarded_by_rule"], dtype=np.int64)
-            boxes += r["stats"]["boxes"]
-            n_rule4 += r["n_rule4"]
-            if r["gamma_low"] > best[0] and r["best_point"] is not None:
-                best = (r["gamma_low"], r["best_point"])
-            if r["counterexample"] is not None or r["overflow"] or (
-                    exact is not None and r["gamma_low"] > exact[0] * (1 + 1e-12)):
-                stop = r
-                pool.terminate()
-                break
-            submit()
+    try:
+        while (queue or running) and stop is None:
+            while queue and len(running) < jobs:
+                (blo, bhi), att = queue.pop(0)
+                recv_end, send_end = ctx.Pipe(duplex=False)
+                proc = ctx.Process(target=_par_child, args=((blo, bhi, list(balls)), send_end))
+                proc.start()
+                send_end.close()
+                running.append((proc, recv_end, (blo, bhi), att))
+            still, progressed = [], False
+            for proc, conn, blk, att in running:
+                r = None
+                if conn.poll():
+                    try:
+                        r = conn.recv()
+                    except EOFError:            # died without a result
+                        r = None
+                    proc.join()
+                elif proc.is_alive():
+                    still.append((proc, conn, blk, att))
+                    continue
+                else:
+                    proc.join()
+                conn.close()
+                progressed = True
+                if r is None or "error" in r:
+                    # the block's process died (e.g. killed) or raised: retry once, then
+                    # leave the block unresolved (the certificate then fails, it never hangs)
+                    if att == 0:
+                        queue.append((blk, 1))
+                    else:
+                        lost += 1
+                        unresolved.append((blk[0], blk[1], np.full(len(blk[0]), np.inf)))
+                    continue
+                merge(r)
+                if r["counterexample"] is not None or r["overflow"] or (
+                        exact is not None and r["gamma_low"] > exact[0] * (1 + 1e-12)):
+                    stop = r
+            running = still
+            if not progressed:
+                time.sleep(0.05)
+    finally:
+        for proc, conn, _, _ in running:       # early stop (or an exception): clean up
+            proc.terminate()
+            proc.join()
+            conn.close()
     bb.balls = balls
     bb.certificate = cert
     bb.cert4 = cert4
@@ -669,7 +717,7 @@ def run_parallel(bb, jobs, grid=(8, 8, 2, 2), **kw):
     un_ub = max([float(np.max(u)) for _, _, u in unresolved], default=-np.inf)
     bb.stats = {"boxes": boxes, "discarded_by_rule": counts[:4].tolist() + [n_rule4],
                 "time": time.time() - t0, "unresolved": int(sum(len(u) for _, _, u in unresolved)),
-                "vectors": len(bb.vecs), "jobs": jobs}
+                "vectors": len(bb.vecs), "jobs": jobs, "lost_blocks": lost}
     if exact is not None:
         bb.stats["balls"] = len(balls)
     base = bb.gamma_low * (1 + bb.delta) * (1 + bb.safety) if exact is None else float(exact[0])

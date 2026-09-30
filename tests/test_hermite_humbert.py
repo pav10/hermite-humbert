@@ -373,3 +373,40 @@ def test_verify_parallel_matches_serial():
         assert a["verified"] == b["verified"] and a["failed"] == b["failed"], (a, b)
         assert abs(a["volume_ratio"] - b["volume_ratio"]) < 1e-12
     assert b["failed"][4] > 0
+
+
+def test_rule4_float_check_is_sound():
+    """The vectorised float pre-check of rule 4 may only accept boxes that the
+    interval-arithmetic check also accepts (at thresholds around the tight one),
+    and it should confirm the large majority of boxes at the actual threshold."""
+    import copy
+    from hermite_humbert.certify import _rule4_float
+    P = HumbertProblem(13)
+    g = float(PUBLISHED[13][0])
+    bb = BranchAndBound(P, 3.8, delta=1e-9)          # far below the max: many rule-4 boxes
+    bb.run(keep_certificate=True)
+    lo, hi, idx, lam = [np.concatenate([c[j] for c in bb.cert4]) for j in range(4)]
+    assert len(lo) > 100
+    thr0 = bb.gamma_low * (1 + bb.delta) * (1 + bb.safety)
+    rng = np.random.default_rng(1)
+    sample = rng.choice(len(lo), size=min(400, len(lo)), replace=False)
+    for thr in (thr0, thr0 * (1 - 1e-12), thr0 * (1 - 1e-9), thr0 * (1 - 1e-6), thr0 * (1 - 1e-3)):
+        okf = _rule4_float(bb, lo, hi, idx, lam, thr)
+        for b in sample:
+            if not okf[b]:
+                continue
+            v = copy.copy(bb)
+            v.certificate, v.unresolved = [], []
+            v.cert4 = [(lo[b:b + 1], hi[b:b + 1], idx[b:b + 1], lam[b:b + 1])]
+            r = verify_certificate(v, thr, float_rule4=False)
+            assert r["verified"][4] == 1, (thr, b)     # float accepted => interval accepts
+        if thr == thr0:
+            assert okf.mean() > 0.9, okf.mean()
+    assert up_to_date_verify(bb, thr0)
+
+
+def up_to_date_verify(bb, thr):
+    """verify_certificate with and without the float pre-check agree on rule 4."""
+    a = verify_certificate(bb, thr)
+    b = verify_certificate(bb, thr, float_rule4=False)
+    return a["verified"][4] == b["verified"][4] and a["failed"][4] == b["failed"][4] == 0

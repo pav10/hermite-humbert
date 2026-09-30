@@ -122,8 +122,14 @@ exists (then c1·c2 = 1).
   a balanced generator); cross-checked with PARI for all D < 300.
 - *Rigorous up to floating point, independently re-checked with outward rounding*
   (IEEE round-to-nearest, exp accurate to 8 ulp): the branch-and-bound covering,
-  rules 0–3, the tiling.  Rule 4 is re-checked in interval arithmetic (mpmath.iv,
-  30 digits), with λ normalised by its interval sum.  (An earlier version of rule 4
+  rules 0–3, the tiling.  Rule 4 is re-checked by a vectorised double-precision
+  evaluation that carries an explicit bound on the accumulated rounding error of
+  every quantity (same model, plus log accurate to 4 ulp; `certify._rule4_float`),
+  and every box it cannot confirm is re-checked in interval arithmetic (mpmath.iv,
+  30 digits), with λ normalised by its interval sum.  A test checks, at thresholds
+  down to the tight one, that the float check never accepts a box the interval
+  check rejects; it confirms essentially all boxes and is ~200× faster, which
+  matters for fields with many rule-4 boxes.  (An earlier version of rule 4
   lost Σλ = 1 at the 10⁻⁸ level through cancellation, which made it unsound on tiny
   boxes; it was caught by a disagreement with an exact-mode run, fixed, and the
   interval re-check would reject such a certificate.  All results in

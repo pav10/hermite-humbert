@@ -1,6 +1,6 @@
 # Hermite–Humbert constants γ_{K,2}, K = Q(√D)
 
-Generated from `gamma_K2.tsv` by `python -m hermite_humbert.tables`. All squarefree D in [2, 299] were attempted: 132 certified (exact mode, certificate re-checked with outward rounding), 48 open.
+Generated from `gamma_K2.tsv` by `python -m hermite_humbert.tables`. All squarefree D in [2, 299] were attempted: 133 certified (exact mode, certificate re-checked with outward rounding), 47 open.
 
 γ is given to 25 significant digits; the per-field JSON files in `fields/` hold 50 digits, every extreme class found, the normal forms and minimal vectors.  `#M` = number of minimal vectors (up to units) of the critical form, `#cl` = number of GL₂(O_K)-classes of extreme forms found (the list of non-critical ones is not certified complete).
 
@@ -47,6 +47,7 @@ Generated from `gamma_K2.tsv` by `python -m hermite_humbert.tables`. All squaref
 | 66 | 264 | 2 | 65 + 8sqrt(66) | 52.0 | 52 | 12 | 17 | 44 |
 | 69 | 69 | 1 | (25 + 3sqrt(69))/2 | 13.1649091645626587509157 | (100 + 14·sqrt(115))/19 | 8 | 4 | 3 |
 | 70 | 280 | 2 | 251 + 30sqrt(70) | 52.22865445523816505774994 | (1582 + 91·sqrt(814))/80 | 6 | 5 | 62 |
+| 71 | 284 | 1 | 3480 + 413sqrt(71) | 50.07925884535043890703911 | (1274675 - 425·sqrt(857609))/17594 | 5 | 12 | 1081 |
 | 73 | 73 | 1 | 1068 + 125sqrt(73) | 4.976526100993567055623472 | (366 + 6·sqrt(7081))/175 | 5 | 8 | 28 |
 | 74 | 296 | 2 | 43 + 5sqrt(74) | 47.85009495413274598714405 | not found by PSLQ | 6 | 14 | 36 |
 | 77 | 77 | 1 | (9 + sqrt(77))/2 | 17.62622085288656397594633 | root of +98040·x^4 -1586893·x^3 -2947868·x^2 +8324316·x^1 -4008004·x^0 | 6 | 5 | 4 |
@@ -145,7 +146,6 @@ Generated from `gamma_K2.tsv` by `python -m hermite_humbert.tables`. All squaref
 |---|---|---|---|---|
 | 46 | 184 | 24335 + 3588sqrt(46) | open (timeout(3600s)) |  |
 | 67 | 268 | 48842 + 5967sqrt(67) | open (timeout(3600s)) |  |
-| 71 | 284 | 3480 + 413sqrt(71) | open (timeout(3600s)) |  |
 | 86 | 344 | 10405 + 1122sqrt(86) | open (timeout(600s)) |  |
 | 94 | 376 | 2143295 + 221064sqrt(94) | open (timeout(600s)) |  |
 | 103 | 412 | 227528 + 22419sqrt(103) | open (timeout(600s)) |  |

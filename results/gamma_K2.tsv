@@ -51,7 +51,7 @@ D	d_K	h_K	eps0	gamma	closed_form	#M	#classes	status	seconds	notes
 82	328	4	9 + sqrt(82)	75.74563263663648499428163	?	5	19	certified+verified	35	
 83	332	1	82 + 9sqrt(83)	62.2962962962962962962963	1682/27	6	12	certified+verified	25	
 85	85	2	(9 + sqrt(85))/2	22.09797399473913659115904	?	5	17	certified+verified	21	
-86	344	-	10405 + 1122sqrt(86)	-	-	-	-	timeout(600s)	600	
+86	344	1	10405 + 1122sqrt(86)	58.86379324480099126241683	(84187 + 261*sqrt(31089))/2212	6	15	certified+verified	888	
 87	348	2	28 + 3sqrt(87)	76.0	76	12	16	certified+verified	36	
 89	89	1	500 + 53sqrt(89)	10.44519506863432953685521	(17320 + 120*sqrt(27145))/3551	5	5	certified+verified	16	
 91	364	2	1574 + 165sqrt(91)	33.98339147233557430097813	?	6	7	certified+verified	529	
@@ -78,7 +78,7 @@ D	d_K	h_K	eps0	gamma	closed_form	#M	#classes	status	seconds	notes
 127	508	-	4730624 + 419775sqrt(127)	-	-	-	-	timeout(600s)	601	
 129	129	-	16855 + 1484sqrt(129)	-	-	-	-	timeout(600s)	600	
 130	520	4	57 + 5sqrt(130)	117.5746928976112621939321	?	7	42	certified+verified	110	
-131	524	-	10610 + 927sqrt(131)	-	-	-	-	timeout(600s)	600	
+131	524	1	10610 + 927sqrt(131)	91.24247715388868951606651	?	6	21	certified+verified	1063	
 133	133	1	(173 + 15sqrt(133))/2	25.35189132471370082228578	sqrt((284417232 + 19662720*sqrt(209))/884801)	6	10	certified+verified	17	
 134	536	-	145925 + 12606sqrt(134)	-	-	-	-	timeout(600s)	600	
 137	137	1	1744 + 149sqrt(137)	13.29484444968345650799662	(75 + sqrt(15481))/15	8	5	certified+verified	77	

@@ -1,6 +1,6 @@
 # Hermite–Humbert constants γ_{K,2}, K = Q(√D)
 
-Generated from `gamma_K2.tsv` by `python -m hermite_humbert.tables`. All squarefree D in [2, 299] were attempted: 128 certified (exact mode, certificate re-checked with outward rounding), 52 open.
+Generated from `gamma_K2.tsv` by `python -m hermite_humbert.tables`. All squarefree D in [2, 299] were attempted: 129 certified (exact mode, certificate re-checked with outward rounding), 51 open.
 
 γ is given to 25 significant digits; the per-field JSON files in `fields/` hold 50 digits, every extreme class found, the normal forms and minimal vectors.  `#M` = number of minimal vectors (up to units) of the critical form, `#cl` = number of GL₂(O_K)-classes of extreme forms found (the list of non-critical ones is not certified complete).
 
@@ -128,6 +128,7 @@ Generated from `gamma_K2.tsv` by `python -m hermite_humbert.tables`. All squaref
 | 273 | 273 | 2 | 727 + 44sqrt(273) | 33.33333333333333333333333 | 100/3 | 6 | 9 | 121 |
 | 274 | 1096 | 4 | 1407 + 85sqrt(274) | 209.5897162427932376437455 | not found by PSLQ | 6 | 43 | 1516 |
 | 277 | 277 | 1 | (2613 + 157sqrt(277))/2 | 34.39862739800232567523912 | root of +47534080·x^4 -902942968·x^3 -29261884729·x^2 +145149093600·x^1 -169414560000·x^0 | 5 | 6 | 146 |
+| 282 | 1128 | 2 | 2351 + 140sqrt(282) | 183.58104844099369109972 | not found by PSLQ | 6 | 25 | 2121 |
 | 285 | 285 | 2 | (17 + sqrt(285))/2 | 66.21902446050901735206545 | sqrt((40670501237072 + 19307480192·sqrt(4434505))/18547197321) | 6 | 24 | 23 |
 | 287 | 1148 | 2 | 288 + 17sqrt(287) | 199.3663989218696483301286 | (2768892 + 10976·sqrt(138334))/34365 | 6 | 10 | 342 |
 | 290 | 1160 | 4 | 17 + sqrt(290) | 279.3672408128860338919055 | (39730400 + 1480000·sqrt(3422))/452119 | 6 | 39 | 144 |
@@ -187,7 +188,6 @@ Generated from `gamma_K2.tsv` by `python -m hermite_humbert.tables`. All squaref
 | 271 | 1084 | ? | error:worker exited with code -9 |  |
 | 278 | 1112 | 2501 + 150sqrt(278) | open (timeout(600s)) |  |
 | 281 | 281 | 1063532 + 63445sqrt(281) | open (timeout(600s)) |  |
-| 282 | 1128 | 2351 + 140sqrt(282) | open (timeout(600s)) |  |
 | 286 | 1144 | 561835 + 33222sqrt(286) | open (timeout(600s)) |  |
 | 295 | 1180 | 2024999 + 117900sqrt(295) | open (timeout(600s)) |  |
 | 298 | 1192 | 409557 + 23725sqrt(298) | open (timeout(600s)) |  |

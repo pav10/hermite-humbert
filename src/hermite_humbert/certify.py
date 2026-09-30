@@ -724,3 +724,82 @@ def run_parallel(bb, jobs, grid=(8, 8, 2, 2), **kw):
     bb.gamma_upper = max(base, un_ub * (1 + bb.safety)) if not bb.overflow else float("inf")
     _PAR.clear()
     return bb.gamma_upper
+
+
+def _verify_child(args, conn):
+    import os
+    try:
+        view, thr = args
+        conn.send(verify_certificate(view, thr))
+    except BaseException as e:          # noqa
+        try:
+            conn.send({"error": repr(e)})
+        except Exception:
+            pass
+    finally:
+        conn.close()
+        os._exit(0)
+
+
+def verify_parallel(bb, threshold, jobs, chunks_per_job=6):
+    """verify_certificate(bb, threshold) with the recorded boxes split into chunks
+    that are re-checked in forked processes (the rule-4 interval re-check is the
+    slow part).  Every chunk is checked by the same routine; the counts and the
+    volume fractions add up to the serial result.  A chunk whose process dies is
+    retried once, then counted as failed (never silently skipped)."""
+    import copy
+    import multiprocessing as mp
+    if jobs <= 1 or bb.certificate is None:
+        return verify_certificate(bb, threshold)
+    n = max(1, jobs * chunks_per_job)
+    cert, cert4 = list(bb.certificate), list(getattr(bb, "cert4", []) or [])
+    views = []
+    for k in range(n):
+        v = copy.copy(bb)
+        v.certificate, v.cert4, v.unresolved = cert[k::n], cert4[k::n], []
+        views.append(v)
+    rest = copy.copy(bb)                       # the unresolved boxes' volume only
+    rest.certificate, rest.cert4 = [], []
+    total = verify_certificate(rest, threshold)
+    ctx = mp.get_context("fork")
+    queue = [(v, 0) for v in views]
+    running = []
+    while queue or running:
+        while queue and len(running) < jobs:
+            v, att = queue.pop(0)
+            r_end, s_end = ctx.Pipe(duplex=False)
+            p = ctx.Process(target=_verify_child, args=((v, threshold), s_end))
+            p.start()
+            s_end.close()
+            running.append((p, r_end, v, att))
+        still, progressed = [], False
+        for p, conn, v, att in running:
+            r = None
+            if conn.poll():
+                try:
+                    r = conn.recv()
+                except EOFError:
+                    r = None
+                p.join()
+            elif p.is_alive():
+                still.append((p, conn, v, att))
+                continue
+            else:
+                p.join()
+            conn.close()
+            progressed = True
+            if r is None or "error" in r:
+                if att == 0:
+                    queue.append((v, 1))
+                else:                          # count the whole chunk as failed
+                    nb = sum(len(c[0]) for c in v.certificate) + sum(len(c[0]) for c in v.cert4)
+                    total["failed"][0] = total["failed"].get(0, 0) + max(1, nb)
+                continue
+            for key in ("verified", "failed"):
+                for rr, c in r[key].items():
+                    total[key][rr] = total[key].get(rr, 0) + c
+            total["volume_ratio"] += r["volume_ratio"]
+        running = still
+        if not progressed:
+            time.sleep(0.05)
+    return total

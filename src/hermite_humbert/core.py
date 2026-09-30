@@ -38,7 +38,7 @@ from .field import RealQuadraticField
 
 from .humbert import HumbertProblem
 from .vertex import VertexFinder
-from .certify import BranchAndBound, verify_certificate, run_parallel, _below
+from .certify import BranchAndBound, verify_certificate, verify_parallel, run_parallel, _below
 from .analysis import classify, classify_global, normal_form, closed_form_gamma, identify, ball_certificate
 
 
@@ -170,7 +170,7 @@ def compute(D, n_samples=3000, n_seeds=24, dps=100, delta=1e-9, exact=True, veri
                       and bbx.gamma_low <= float(gstar) * (1 + 1e-12))
                 st = dict(bbx.stats)
                 if verify and ok:
-                    vr = verify_certificate(bbx, _below(gstar))
+                    vr = verify_parallel(bbx, _below(gstar), jobs)
                     st["verification"] = vr
                     ok = sum(vr["failed"].values()) == 0 and abs(vr["volume_ratio"] - 1) < 1e-9
                     exact_res.setdefault("verification", []).append(vr)

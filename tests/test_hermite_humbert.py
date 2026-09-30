@@ -357,3 +357,19 @@ def test_parallel_block_death_is_retried(monkeypatch, tmp_path):
     monkeypatch.setattr(certify, "_par_task", lambda args: os._exit(1))
     r = compute(13, verbose=False, exact=True, verify=False, n_samples=2000, n_seeds=16, jobs=2)
     assert not r["exact"]["proved"]
+
+
+def test_verify_parallel_matches_serial():
+    """The chunked, forked re-check gives exactly the serial counts and volume,
+    and still rejects a certificate checked against a lowered threshold."""
+    from hermite_humbert.certify import verify_parallel
+    P = HumbertProblem(13)
+    g = float(PUBLISHED[13][0])
+    bb = BranchAndBound(P, g, delta=1e-9)
+    bb.run(keep_certificate=True)
+    for thr in (g * (1 + 1e-9) * (1 + 1e-11), g * (1 - 1e-4)):
+        a = verify_certificate(bb, thr)
+        b = verify_parallel(bb, thr, jobs=3)
+        assert a["verified"] == b["verified"] and a["failed"] == b["failed"], (a, b)
+        assert abs(a["volume_ratio"] - b["volume_ratio"]) < 1e-12
+    assert b["failed"][4] > 0

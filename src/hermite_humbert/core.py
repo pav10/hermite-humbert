@@ -77,6 +77,25 @@ def _problems(D):
     return [HumbertProblem(D, require_h1=False, chart=c) for c in charts], h
 
 
+def _slabs(charts, width=1.0, margin=0.25):
+    """Cut each chart's region into slabs of width <= `width` in s (only if its
+    s-range exceeds 2*width, i.e. for large units); see HumbertProblem.slab."""
+    out = []
+    for k, P in enumerate(charts):
+        P.chart_index = k
+        L = P.s_max - P.s_min
+        n = 1 if L <= 2 * width else int(math.ceil(L / width))
+        if n == 1:
+            out.append(P)
+            continue
+        edges = np.linspace(P.s_min, P.s_max, n + 1)
+        for i in range(n):
+            Q = P.slab(edges[i], edges[i + 1], margin)
+            Q.chart_index = k
+            out.append(Q)
+    return out
+
+
 def compute(D, n_samples=3000, n_seeds=24, dps=100, delta=1e-9, exact=True, verify=False,
             verbose=True, max_boxes=5e7, jobs=1):
     """Compute gamma_{K,2} for K = Q(sqrt D) (any class number).  Returns a dict
@@ -84,19 +103,28 @@ def compute(D, n_samples=3000, n_seeds=24, dps=100, delta=1e-9, exact=True, veri
     certificate status.  The certificate covers every chart.  jobs > 1 runs the
     exact-mode branch-and-bound in that many processes (POSIX only)."""
     t0 = time.time()
-    problems, h = _problems(D)
-    F = problems[0].F
+    charts, h = _problems(D)
+    problems = _slabs(charts)
+    F = charts[0].F
     say = print if verbose else (lambda *a, **k: None)
     say("K = Q(sqrt(%d)), d_K = %d, eps0 = %s (norm %+d), h_K = %d"
         % (D, F.disc, F.fmt(F.fundamental_unit()), F.unit_norm(), h))
     VFs = [VertexFinder(P) for P in problems]
-    for P in problems:
-        say("  chart %s: |V| = %d" % ("O_K^2" if P.chart is None else P.chart.label(), len(P.V)))
+    for c, C in enumerate(charts):
+        sl = [P for P in problems if P.chart_index == c]
+        say("  chart %s: |V| = %s%s" % ("O_K^2" if C.chart is None else C.chart.label(),
+                                       "+".join(str(len(P.V)) for P in sl),
+                                       "  (%d slabs in s)" % len(sl) if len(sl) > 1 else ""))
     verts = []
     for k, VF in enumerate(VFs):
+        P = problems[k]
+        C = charts[P.chart_index]
+        frac = (P.s_max - P.s_min) / max(C.s_max - C.s_min, 1e-12)
         # fewer seeds when V is large: a missed maximum is recovered by the B&B
-        seeds = max(6, min(n_seeds, int(n_seeds * 20000 / max(1, len(problems[k].V)))))
-        for v in VF.multistart(n_samples=n_samples, n_seeds=seeds, dps=dps):
+        seeds = max(6, min(n_seeds, int(n_seeds * 20000 / max(1, len(P.V)))))
+        if frac < 1:
+            seeds = max(4, min(seeds, int(round(2 * n_seeds * frac)) + 1))
+        for v in VF.multistart(n_samples=max(500, int(n_samples * frac)), n_seeds=seeds, dps=dps):
             v["chart"] = k
             verts.append(v)
     if not verts:
@@ -190,7 +218,7 @@ def compute(D, n_samples=3000, n_seeds=24, dps=100, delta=1e-9, exact=True, veri
                             "eutaxy_margin": rep["eutaxy_margin"], "rho": rep["rho"],
                             "self_conjugate": c["self_conjugate"], "conjugate_of": c["conjugate_of"],
                             "copies_found": len(c["members"]), "chart": rep["chart"],
-                            "charts_seen": sorted(set(m["chart"] for m in c["members"])),
+                            "charts_seen": sorted(set(problems[m["chart"]].chart_index for m in c["members"])),
                             "chart_label": "O_K^2" if P.chart is None else P.chart.label()})
     out_classes.sort(key=lambda c: -c["gamma"])
     gstar = out_classes[0]["gamma"]

@@ -318,3 +318,18 @@ def test_parallel_branch_and_bound():
         for ver in r["exact"]["verification"]:
             assert sum(ver["failed"].values()) == 0 and abs(ver["volume_ratio"] - 1) < 1e-9
     assert abs(r["gamma"] - (80 + 16 * S(10)) / 15) < mpmath.mpf(10) ** -40
+
+
+def test_sweep_cli(tmp_path):
+    """hermite-humbert-sweep: isolated subprocess per field, table + JSON written,
+    a timed-out field is recorded (not lost), and re-running resumes."""
+    import csv
+    from hermite_humbert.sweep import main as sweep_main
+    out = tmp_path / "t.tsv"
+    sweep_main([str(out), "5,13,46", "-j", "2", "--timeout", "15"])
+    rows = {int(r["D"]): r for r in csv.DictReader(open(out), delimiter="\t")}
+    assert rows[5]["status"].startswith("certified") and rows[13]["status"].startswith("certified")
+    assert rows[46]["status"] == "timeout(15s)"
+    assert (tmp_path / "fields" / "D13.json").exists()
+    sweep_main([str(out), "5,13,46", "--timeout", "15"])      # nothing left to do
+    assert len(list(csv.DictReader(open(out), delimiter="\t"))) == 3

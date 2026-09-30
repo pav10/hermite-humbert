@@ -115,7 +115,7 @@ class BranchAndBound:
         # centre value > C proves G > C there (then gamma_low was far too small:
         # self.overflow is set and no bound is claimed).
         self.C = min(P.d / 2.0, 1.1 * self.gamma_low)
-        self.vecs, self.A1, self.B1, self.A2, self.B2 = P.candidate_vectors(self.C)
+        self.vecs, self.A1, self.B1, self.A2, self.B2 = P.candidate_vectors(self.C, (P.s_min, P.s_max))
         self.overflow = False
         self.X1, self.X2 = P.x_ranges()
         g1, g2 = P.g1, P.g2

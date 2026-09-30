@@ -46,10 +46,12 @@ class VertexFinder:
         """log G at p after moving p into the exact region (G is invariant)."""
         P = self.P
         p = P.to_region(p)
-        if not P.in_exact_region(p, tol=0.0):
+        if not P.in_V_region(p, tol=0.0):
             if not P.use_primitive:          # h_K > 1: stay inside this chart's region
                 return p, -np.inf
             p = P.reduce_to_top(p)
+            if not P.in_V_region(p):         # (a slab: V is not exact there)
+                return p, -np.inf
         phi, _ = self.phi_grad(p)
         return p, float(np.min(phi))
 

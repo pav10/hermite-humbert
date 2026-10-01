@@ -179,17 +179,37 @@ both directions against the chart-independent O_K² minimum.
 
 ## Recomputation of all squarefree D ≤ 300 (current code)
 
-`results/gamma_K2.tsv` (one row per field) and `results/fields/D<D>.json` (full
-results) are being produced by
+**141 of the 182 squarefree D ≤ 300 are certified** (exact mode, every certificate
+re-checked with outward rounding).  The table is `results/gamma_K2.tsv` (one row per
+field; rendered in `results/README.md`), and `results/fields/D<D>.json` holds the
+full result of each field (all extreme classes found, normal forms, minimal
+vectors, perfection rank, eutactic coefficients, certificate statistics).  It was
+produced by
 
-    hermite-humbert-sweep results/gamma_K2.tsv 2-300 -j 4 --timeout 600        # phase 1
-    hermite-humbert-sweep results/gamma_K2.tsv <timed-out D> -j 1 --field-jobs 4 --timeout 0   # phase 2
+    hermite-humbert-sweep results/gamma_K2.tsv 2-300 -j 4 --timeout 600              # all fields, 10 min each
+    hermite-humbert-sweep results/gamma_K2.tsv <D> -j 1 --field-jobs 4 --timeout 0   # then each timed-out field
 
-with exact mode and the outward-rounded re-check for every field.  Fields whose
-status is `timeout(...)` are not certified yet (mostly large fundamental units).
-`python -m hermite_humbert.tables results/gamma_K2.tsv` renders the table as
-Markdown.  The tables below are from the original runs and are kept for reference;
-the values agree with the recomputation wherever both exist.
+Where both exist, the values agree to 20 digits with the original runs (the
+tables further down, kept for reference: 51 fields).
+
+### Open fields (D ≤ 300)
+
+The remaining 41 fields are open: none was disproved, they were not finished.
+Cost and memory grow roughly like √ε₀ (the region is long in the unit direction),
+so they sort by the fundamental unit:
+
+| reason | fields (ε₀) |
+|---|---|
+| not finished within the time given (1 h for 46, 67; 10 min for the rest), ε₀ ≤ 10⁶; feasible with `--field-jobs 4 --timeout 0` on a machine that is not interrupted (estimated 0.5–2 h each from the phase-2 runs that finished) | 46 (4.9·10⁴), 67 (9.8·10⁴), 103 (4.6·10⁵), 118 (6.1·10⁵), 134 (2.9·10⁵), 154 (4.3·10⁴), 177 (1.2·10⁵), 190 (1.0·10⁵), 206 (1.2·10⁵), 209 (9.3·10⁴), 233 (4.6·10⁴), 246 (1.8·10⁵), 247 (1.7·10⁵), 263 (2.8·10⁵), 298 (8.2·10⁵) |
+| killed for memory with 4 processes (16 GB machine); retry with `--field-jobs 2` | 238 (2.3·10⁴) |
+| ε₀ between 10⁶ and 10⁸: timed out at 10 min, not retried (hours to days each with the current code) | 94, 127, 179, 191, 193, 201, 217, 239, 249, 251, 259, 281, 286, 295 |
+| ε₀ > 10⁸: the candidate-vector set alone exceeds 16 GB (D = 139: 3.2·10⁷ vectors, 13.6 GB) | 139, 151, 163, 166, 199, 211, 241, 262, 271, 283 |
+| ε₀ > 10¹² (≈ 1.4·10¹²): outside the double-precision range of the code | 214 |
+
+What would extend the reach (see also "Extensions"): checkpoint/resume of the
+branch-and-bound (the runs above were repeatedly lost to restarts of the machine),
+cutting the high s-slabs into strips in x₁ so the candidate sets stay small, and a
+compiled per-box kernel.
 
 ## Results (h_K = 1, D < 50; all certified in exact mode with `--verify`)
 
@@ -318,7 +338,11 @@ Elsewhere:
 
 ## Extensions (not implemented)
 
-- Parallelism, a compiled per-box kernel, checkpoint/resume (see "Performance and reach").
+- Implemented since: parallel sweeps over fields (`hermite-humbert-sweep`), a parallel
+  branch-and-bound and certificate re-check within a field (`--jobs` / `--field-jobs`),
+  slabs in s for large units, a vectorised rule-4 re-check.
+- Not yet: a compiled per-box kernel, checkpoint/resume of a field, strips in x₁ for
+  the high s-slabs (see "Open fields").
 - Totally real fields of higher degree (points of ℍⁿ) and n ≥ 3 (γ_{K,n}).
 
 ## References (project files)

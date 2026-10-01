@@ -76,7 +76,7 @@ D	d_K	h_K	eps0	gamma	closed_form	#M	#classes	status	seconds	notes
 122	488	2	11 + sqrt(122)	129.3848278747492569979054	?	6	13	certified+verified	41	
 123	492	2	122 + 11sqrt(123)	81.72822854565556490335141	(333764 + 3080*sqrt(90118))/15397	6	13	certified+verified	69	
 127	508	-	4730624 + 419775sqrt(127)	-	-	-	-	timeout(600s)	601	
-129	129	-	16855 + 1484sqrt(129)	-	-	-	-	timeout(600s)	600	
+129	129	1	16855 + 1484sqrt(129)	12.30769230769230769230769	160/13	8	10	certified+verified	287	
 130	520	4	57 + 5sqrt(130)	117.5746928976112621939321	?	7	42	certified+verified	110	
 131	524	1	10610 + 927sqrt(131)	91.24247715388868951606651	?	6	21	certified+verified	1063	
 133	133	1	(173 + 15sqrt(133))/2	25.35189132471370082228578	sqrt((284417232 + 19662720*sqrt(209))/884801)	6	10	certified+verified	17	
@@ -96,7 +96,7 @@ D	d_K	h_K	eps0	gamma	closed_form	#M	#classes	status	seconds	notes
 157	157	1	(213 + 17sqrt(157))/2	20.81604327737706883333666	?	5	7	certified+verified	14	
 158	632	1	7743 + 616sqrt(158)	109.1031799210700449288784	sqrt((4075214447 + 7356085*sqrt(258409))/656496)	6	22	certified+verified	1241	multistart missed the maximum; recovered from the B&B (chart 0); multistart missed the maximum; recovered from the B&B (chart 1)
 159	636	2	1324 + 105sqrt(159)	111.1702127659574468085106	5225/47	8	30	certified+verified	362	
-161	161	-	11775 + 928sqrt(161)	-	-	-	-	timeout(600s)	600	
+161	161	1	11775 + 928sqrt(161)	12.62790781118747031143237	?	5	13	certified+verified	402	
 163	652	-	?	-	-	-	-	error:worker exited with code -9	139	
 165	165	2	(13 + sqrt(165))/2	41.7210636757641080385794	(6237 + 63*sqrt(17985))/352	6	8	certified+verified	10	
 166	664	-	?	-	-	-	-	error:worker exited with code -9	106	
@@ -145,7 +145,7 @@ D	d_K	h_K	eps0	gamma	closed_form	#M	#classes	status	seconds	notes
 233	233	-	23156 + 1517sqrt(233)	-	-	-	-	timeout(600s)	600	
 235	940	6	46 + 3sqrt(235)	281.3333333333333333333333	844/3	12	32	certified+verified	115	
 237	237	1	(77 + 5sqrt(237))/2	52.05321322379350258242317	(3341 + 13*sqrt(33654))/110	6	9	certified+verified	16	
-238	952	-	11663 + 756sqrt(238)	-	-	-	-	timeout(600s)	601	
+238	952	-	?	-	-	-	-	error:worker exited with code -9	4787	
 239	956	-	6195120 + 400729sqrt(239)	-	-	-	-	timeout(600s)	603	
 241	241	-	71011068 + 4574225sqrt(241)	-	-	-	-	timeout(600s)	602	
 246	984	-	88805 + 5662sqrt(246)	-	-	-	-	timeout(600s)	602	

@@ -1,6 +1,6 @@
 # Hermite–Humbert constants γ_{K,2}, K = Q(√D)
 
-Generated from `gamma_K2.tsv` by `python -m hermite_humbert.tables`. All squarefree D in [2, 299] were attempted: 139 certified (exact mode, certificate re-checked with outward rounding), 41 open.
+Generated from `gamma_K2.tsv` by `python -m hermite_humbert.tables`. All squarefree D in [2, 299] were attempted: 141 certified (exact mode, certificate re-checked with outward rounding), 39 open.
 
 γ is given to 25 significant digits; the per-field JSON files in `fields/` hold 50 digits, every extreme class found, the normal forms and minimal vectors.  `#M` = number of minimal vectors (up to units) of the critical form, `#cl` = number of GL₂(O_K)-classes of extreme forms found (the list of non-critical ones is not certified complete).
 
@@ -77,6 +77,7 @@ Generated from `gamma_K2.tsv` by `python -m hermite_humbert.tables`. All squaref
 | 119 | 476 | 2 | 120 + 11sqrt(119) | 100.7802367444846544411749 | (964500 + 56000·sqrt(510))/22119 | 9 | 22 | 67 |
 | 122 | 488 | 2 | 11 + sqrt(122) | 129.3848278747492569979054 | not found by PSLQ | 6 | 13 | 41 |
 | 123 | 492 | 2 | 122 + 11sqrt(123) | 81.72822854565556490335141 | (333764 + 3080·sqrt(90118))/15397 | 6 | 13 | 69 |
+| 129 | 129 | 1 | 16855 + 1484sqrt(129) | 12.30769230769230769230769 | 160/13 | 8 | 10 | 287 |
 | 130 | 520 | 4 | 57 + 5sqrt(130) | 117.5746928976112621939321 | not found by PSLQ | 7 | 42 | 110 |
 | 131 | 524 | 1 | 10610 + 927sqrt(131) | 91.24247715388868951606651 | not found by PSLQ | 6 | 21 | 1063 |
 | 133 | 133 | 1 | (173 + 15sqrt(133))/2 | 25.35189132471370082228578 | sqrt((284417232 + 19662720·sqrt(209))/884801) | 6 | 10 | 17 |
@@ -92,6 +93,7 @@ Generated from `gamma_K2.tsv` by `python -m hermite_humbert.tables`. All squaref
 | 157 | 157 | 1 | (213 + 17sqrt(157))/2 | 20.81604327737706883333666 | not found by PSLQ | 5 | 7 | 14 |
 | 158 | 632 | 1 | 7743 + 616sqrt(158) | 109.1031799210700449288784 | sqrt((4075214447 + 7356085·sqrt(258409))/656496) | 6 | 22 | 1241 |
 | 159 | 636 | 2 | 1324 + 105sqrt(159) | 111.1702127659574468085106 | 5225/47 | 8 | 30 | 362 |
+| 161 | 161 | 1 | 11775 + 928sqrt(161) | 12.62790781118747031143237 | not found by PSLQ | 5 | 13 | 402 |
 | 165 | 165 | 2 | (13 + sqrt(165))/2 | 41.7210636757641080385794 | (6237 + 63·sqrt(17985))/352 | 6 | 8 | 10 |
 | 167 | 668 | 1 | 168 + 13sqrt(167) | 129.3333333333333333333333 | 388/3 | 12 | 9 | 136 |
 | 170 | 680 | 4 | 13 + sqrt(170) | 158.8240744314336403949918 | not found by PSLQ | 5 | 44 | 88 |
@@ -156,12 +158,10 @@ Generated from `gamma_K2.tsv` by `python -m hermite_humbert.tables`. All squaref
 | 103 | 412 | 227528 + 22419sqrt(103) | open (timeout(600s)) |  |
 | 118 | 472 | 306917 + 28254sqrt(118) | open (timeout(600s)) |  |
 | 127 | 508 | 4730624 + 419775sqrt(127) | open (timeout(600s)) |  |
-| 129 | 129 | 16855 + 1484sqrt(129) | open (timeout(600s)) |  |
 | 134 | 536 | 145925 + 12606sqrt(134) | open (timeout(600s)) |  |
 | 139 | 556 | ? | error:worker exited with code -9 |  |
 | 151 | 604 | ? | error:worker exited with code -9 |  |
 | 154 | 616 | 21295 + 1716sqrt(154) | open (timeout(600s)) |  |
-| 161 | 161 | 11775 + 928sqrt(161) | open (timeout(600s)) |  |
 | 163 | 652 | ? | error:worker exited with code -9 |  |
 | 166 | 664 | ? | error:worker exited with code -9 |  |
 | 177 | 177 | 62423 + 4692sqrt(177) | open (timeout(600s)) |  |
@@ -177,7 +177,7 @@ Generated from `gamma_K2.tsv` by `python -m hermite_humbert.tables`. All squaref
 | 214 | 856 | 695359189925 + 47533775646sqrt(214) | error:NotImplementedError('fundamental unit 1.39e+12 exceeds 1e+12: float routines unreliable') |  |
 | 217 | 217 | 3844063 + 260952sqrt(217) | open (timeout(600s)) |  |
 | 233 | 233 | 23156 + 1517sqrt(233) | open (timeout(600s)) |  |
-| 238 | 952 | 11663 + 756sqrt(238) | open (timeout(600s)) |  |
+| 238 | 952 | ? | error:worker exited with code -9 |  |
 | 239 | 956 | 6195120 + 400729sqrt(239) | open (timeout(600s)) |  |
 | 241 | 241 | 71011068 + 4574225sqrt(241) | open (timeout(600s)) |  |
 | 246 | 984 | 88805 + 5662sqrt(246) | open (timeout(600s)) |  |

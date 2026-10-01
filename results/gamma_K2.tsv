@@ -51,7 +51,7 @@ D	d_K	h_K	eps0	gamma	closed_form	#M	#classes	status	seconds	notes
 82	328	4	9 + sqrt(82)	75.74563263663648499428163	?	5	19	certified+verified	35	
 83	332	1	82 + 9sqrt(83)	62.2962962962962962962963	1682/27	6	12	certified+verified	25	
 85	85	2	(9 + sqrt(85))/2	22.09797399473913659115904	?	5	17	certified+verified	21	
-86	344	-	10405 + 1122sqrt(86)	-	-	-	-	timeout(600s)	600	
+86	344	1	10405 + 1122sqrt(86)	58.86379324480099126241683	(84187 + 261*sqrt(31089))/2212	6	15	certified+verified	888	
 87	348	2	28 + 3sqrt(87)	76.0	76	12	16	certified+verified	36	
 89	89	1	500 + 53sqrt(89)	10.44519506863432953685521	(17320 + 120*sqrt(27145))/3551	5	5	certified+verified	16	
 91	364	2	1574 + 165sqrt(91)	33.98339147233557430097813	?	6	7	certified+verified	529	
@@ -76,9 +76,9 @@ D	d_K	h_K	eps0	gamma	closed_form	#M	#classes	status	seconds	notes
 122	488	2	11 + sqrt(122)	129.3848278747492569979054	?	6	13	certified+verified	41	
 123	492	2	122 + 11sqrt(123)	81.72822854565556490335141	(333764 + 3080*sqrt(90118))/15397	6	13	certified+verified	69	
 127	508	-	4730624 + 419775sqrt(127)	-	-	-	-	timeout(600s)	601	
-129	129	-	16855 + 1484sqrt(129)	-	-	-	-	timeout(600s)	600	
+129	129	1	16855 + 1484sqrt(129)	12.30769230769230769230769	160/13	8	10	certified+verified	287	
 130	520	4	57 + 5sqrt(130)	117.5746928976112621939321	?	7	42	certified+verified	110	
-131	524	-	10610 + 927sqrt(131)	-	-	-	-	timeout(600s)	600	
+131	524	1	10610 + 927sqrt(131)	91.24247715388868951606651	?	6	21	certified+verified	1063	
 133	133	1	(173 + 15sqrt(133))/2	25.35189132471370082228578	sqrt((284417232 + 19662720*sqrt(209))/884801)	6	10	certified+verified	17	
 134	536	-	145925 + 12606sqrt(134)	-	-	-	-	timeout(600s)	600	
 137	137	1	1744 + 149sqrt(137)	13.29484444968345650799662	(75 + sqrt(15481))/15	8	5	certified+verified	77	
@@ -94,9 +94,9 @@ D	d_K	h_K	eps0	gamma	closed_form	#M	#classes	status	seconds	notes
 154	616	-	21295 + 1716sqrt(154)	-	-	-	-	timeout(600s)	601	
 155	620	2	249 + 20sqrt(155)	125.8352756055155374035021	?	6	7	certified+verified	111	
 157	157	1	(213 + 17sqrt(157))/2	20.81604327737706883333666	?	5	7	certified+verified	14	
-158	632	-	7743 + 616sqrt(158)	-	-	-	-	timeout(600s)	600	
+158	632	1	7743 + 616sqrt(158)	109.1031799210700449288784	sqrt((4075214447 + 7356085*sqrt(258409))/656496)	6	22	certified+verified	1241	multistart missed the maximum; recovered from the B&B (chart 0); multistart missed the maximum; recovered from the B&B (chart 1)
 159	636	2	1324 + 105sqrt(159)	111.1702127659574468085106	5225/47	8	30	certified+verified	362	
-161	161	-	11775 + 928sqrt(161)	-	-	-	-	timeout(600s)	600	
+161	161	1	11775 + 928sqrt(161)	12.62790781118747031143237	?	5	13	certified+verified	402	
 163	652	-	?	-	-	-	-	error:worker exited with code -9	139	
 165	165	2	(13 + sqrt(165))/2	41.7210636757641080385794	(6237 + 63*sqrt(17985))/352	6	8	certified+verified	10	
 166	664	-	?	-	-	-	-	error:worker exited with code -9	106	
@@ -111,7 +111,7 @@ D	d_K	h_K	eps0	gamma	closed_form	#M	#classes	status	seconds	notes
 182	728	2	27 + 2sqrt(182)	176.6982214495062442193797	(417079488 + 1763200*sqrt(1244390))/13491751	6	17	certified+verified	64	
 183	732	2	487 + 36sqrt(183)	109.0	109	8	11	certified+verified	293	
 185	185	2	68 + 5sqrt(185)	36.12769769502906997511263	?	5	8	certified+verified	32	
-186	744	-	7501 + 550sqrt(186)	-	-	-	-	timeout(600s)	600	
+186	744	2	7501 + 550sqrt(186)	101.0101010101010101010101	10000/99	6	26	certified+verified	2101	
 187	748	2	1682 + 123sqrt(187)	105.3970987393040026441217	?	5	34	certified+verified	734	
 190	760	-	52021 + 3774sqrt(190)	-	-	-	-	timeout(600s)	603	
 191	764	-	8994000 + 650783sqrt(191)	-	-	-	-	timeout(600s)	603	
@@ -145,7 +145,7 @@ D	d_K	h_K	eps0	gamma	closed_form	#M	#classes	status	seconds	notes
 233	233	-	23156 + 1517sqrt(233)	-	-	-	-	timeout(600s)	600	
 235	940	6	46 + 3sqrt(235)	281.3333333333333333333333	844/3	12	32	certified+verified	115	
 237	237	1	(77 + 5sqrt(237))/2	52.05321322379350258242317	(3341 + 13*sqrt(33654))/110	6	9	certified+verified	16	
-238	952	-	11663 + 756sqrt(238)	-	-	-	-	timeout(600s)	601	
+238	952	-	?	-	-	-	-	error:worker exited with code -9	4787	
 239	956	-	6195120 + 400729sqrt(239)	-	-	-	-	timeout(600s)	603	
 241	241	-	71011068 + 4574225sqrt(241)	-	-	-	-	timeout(600s)	602	
 246	984	-	88805 + 5662sqrt(246)	-	-	-	-	timeout(600s)	602	

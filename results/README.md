@@ -1,6 +1,6 @@
 # Hermite–Humbert constants γ_{K,2}, K = Q(√D)
 
-Generated from `gamma_K2.tsv` by `python -m hermite_humbert.tables`. All squarefree D in [2, 299] were attempted: 144 certified (exact mode, certificate re-checked with outward rounding), 36 open.
+Generated from `gamma_K2.tsv` by `python -m hermite_humbert.tables`. All squarefree D in [2, 299] were attempted: 145 certified (exact mode, certificate re-checked with outward rounding), 35 open.
 
 γ is given to 25 significant digits; the per-field JSON files in `fields/` hold 50 digits, every extreme class found, the normal forms and minimal vectors.  `#M` = number of minimal vectors (up to units) of the critical form, `#cl` = number of GL₂(O_K)-classes of extreme forms found (the list of non-critical ones is not certified complete).
 
@@ -114,6 +114,7 @@ Generated from `gamma_K2.tsv` by `python -m hermite_humbert.tables`. All squaref
 | 202 | 808 | 2 | 3141 + 221sqrt(202) | 119.0793650265376978811492 | not found by PSLQ | 5 | 33 | 1532 |
 | 203 | 812 | 2 | 57 + 4sqrt(203) | 156.963543441338158368121 | (9100 + 256·sqrt(1057))/111 | 8 | 15 | 96 |
 | 205 | 205 | 2 | (43 + 3sqrt(205))/2 | 48.07545844866995207312215 | root of +3390464·x^4 -168159912·x^3 -423244017·x^2 +36388173024·x^1 -197605142784·x^0 | 8 | 15 | 19 |
+| 209 | 209 | 1 | 46551 + 3220sqrt(209) | 17.33333333333333333333333 | 52/3 | 12 | 16 | 5308 |
 | 210 | 840 | 4 | 29 + 2sqrt(210) | 161.4304037947459266454736 | not found by PSLQ | 6 | 43 | 121 |
 | 213 | 213 | 1 | (73 + 5sqrt(213))/2 | 44.95490883759806679062881 | (6958 + 60·sqrt(65746))/497 | 8 | 7 | 9 |
 | 215 | 860 | 2 | 44 + 3sqrt(215) | 193.3354733487220758599592 | not found by PSLQ | 6 | 11 | 83 |
@@ -173,7 +174,6 @@ Generated from `gamma_K2.tsv` by `python -m hermite_humbert.tables`. All squaref
 | 199 | 796 | ? | error:worker exited with code -9 |  |
 | 201 | 201 | 515095 + 36332sqrt(201) | open (timeout(600s)) |  |
 | 206 | 824 | 59535 + 4148sqrt(206) | open (timeout(600s)) |  |
-| 209 | 209 | 46551 + 3220sqrt(209) | open (timeout(600s)) |  |
 | 211 | 844 | ? | error:worker exited with code -9 |  |
 | 214 | 856 | 695359189925 + 47533775646sqrt(214) | error:NotImplementedError('fundamental unit 1.39e+12 exceeds 1e+12: float routines unreliable') |  |
 | 217 | 217 | 3844063 + 260952sqrt(217) | open (timeout(600s)) |  |

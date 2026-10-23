@@ -1,6 +1,6 @@
 # Hermite–Humbert constants γ_{K,2}, K = Q(√D)
 
-Generated from `gamma_K2.tsv` by `python -m hermite_humbert.tables`. All squarefree D in [2, 299] were attempted: 145 certified (exact mode, certificate re-checked with outward rounding), 35 open.
+Generated from `gamma_K2.tsv` by `python -m hermite_humbert.tables`. All squarefree D in [2, 299] were attempted: 146 certified (exact mode, certificate re-checked with outward rounding), 34 open.
 
 γ is given to 25 significant digits; the per-field JSON files in `fields/` hold 50 digits, every extreme class found, the normal forms and minimal vectors.  `#M` = number of minimal vectors (up to units) of the critical form, `#cl` = number of GL₂(O_K)-classes of extreme forms found (the list of non-critical ones is not certified complete).
 
@@ -46,6 +46,7 @@ Generated from `gamma_K2.tsv` by `python -m hermite_humbert.tables`. All squaref
 | 62 | 248 | 1 | 63 + 8sqrt(62) | 52.07665145062609136354068 | (208468 + 6656·sqrt(589))/7105 | 6 | 13 | 21 |
 | 65 | 65 | 2 | 8 + sqrt(65) | 17.06666666666666666666667 | 256/15 | 12 | 12 | 21 |
 | 66 | 264 | 2 | 65 + 8sqrt(66) | 52.0 | 52 | 12 | 17 | 44 |
+| 67 | 268 | 1 | 48842 + 5967sqrt(67) | 29.27102803738317757009346 | 3132/107 | 8 | 17 | 4429 |
 | 69 | 69 | 1 | (25 + 3sqrt(69))/2 | 13.1649091645626587509157 | (100 + 14·sqrt(115))/19 | 8 | 4 | 3 |
 | 70 | 280 | 2 | 251 + 30sqrt(70) | 52.22865445523816505774994 | (1582 + 91·sqrt(814))/80 | 6 | 5 | 62 |
 | 71 | 284 | 1 | 3480 + 413sqrt(71) | 50.07925884535043890703911 | (1274675 - 425·sqrt(857609))/17594 | 5 | 12 | 1081 |
@@ -156,7 +157,6 @@ Generated from `gamma_K2.tsv` by `python -m hermite_humbert.tables`. All squaref
 
 | D | d_K | ε₀ | status | notes |
 |---|---|---|---|---|
-| 67 | 268 | 48842 + 5967sqrt(67) | open (timeout(3600s)) |  |
 | 94 | 376 | 2143295 + 221064sqrt(94) | open (timeout(600s)) |  |
 | 103 | 412 | 227528 + 22419sqrt(103) | open (timeout(600s)) |  |
 | 118 | 472 | 306917 + 28254sqrt(118) | open (timeout(600s)) |  |

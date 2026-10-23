@@ -1,6 +1,6 @@
 # Hermite–Humbert constants γ_{K,2}, K = Q(√D)
 
-Generated from `gamma_K2.tsv` by `python -m hermite_humbert.tables`. All squarefree D in [2, 299] were attempted: 142 certified (exact mode, certificate re-checked with outward rounding), 38 open.
+Generated from `gamma_K2.tsv` by `python -m hermite_humbert.tables`. All squarefree D in [2, 299] were attempted: 143 certified (exact mode, certificate re-checked with outward rounding), 37 open.
 
 γ is given to 25 significant digits; the per-field JSON files in `fields/` hold 50 digits, every extreme class found, the normal forms and minimal vectors.  `#M` = number of minimal vectors (up to units) of the critical form, `#cl` = number of GL₂(O_K)-classes of extreme forms found (the list of non-critical ones is not certified complete).
 
@@ -126,6 +126,7 @@ Generated from `gamma_K2.tsv` by `python -m hermite_humbert.tables`. All squaref
 | 229 | 229 | 3 | (15 + sqrt(229))/2 | 50.70076127760953805494229 | (3822660 + 15120·sqrt(89310))/164519 | 5 | 17 | 26 |
 | 230 | 920 | 2 | 91 + 6sqrt(230) | 241.3333333333333333333333 | 724/3 | 12 | 9 | 98 |
 | 231 | 924 | 4 | 76 + 5sqrt(231) | 218.7004588686248510084819 | sqrt((8600800000 + 156800000·sqrt(2431))/341457) | 7 | 47 | 154 |
+| 233 | 233 | 1 | 23156 + 1517sqrt(233) | 21.55223588735510986644336 | (4221 + 23·sqrt(63609))/465 | 8 | 15 | 1163 |
 | 235 | 940 | 6 | 46 + 3sqrt(235) | 281.3333333333333333333333 | 844/3 | 12 | 32 | 115 |
 | 237 | 237 | 1 | (77 + 5sqrt(237))/2 | 52.05321322379350258242317 | (3341 + 13·sqrt(33654))/110 | 6 | 9 | 16 |
 | 253 | 253 | 1 | (1861 + 117sqrt(253))/2 | 29.80017586949852871966498 | (2968 + 14·sqrt(41239))/195 | 6 | 8 | 68 |
@@ -176,7 +177,6 @@ Generated from `gamma_K2.tsv` by `python -m hermite_humbert.tables`. All squaref
 | 211 | 844 | ? | error:worker exited with code -9 |  |
 | 214 | 856 | 695359189925 + 47533775646sqrt(214) | error:NotImplementedError('fundamental unit 1.39e+12 exceeds 1e+12: float routines unreliable') |  |
 | 217 | 217 | 3844063 + 260952sqrt(217) | open (timeout(600s)) |  |
-| 233 | 233 | 23156 + 1517sqrt(233) | open (timeout(600s)) |  |
 | 238 | 952 | ? | error:worker exited with code -9 |  |
 | 239 | 956 | 6195120 + 400729sqrt(239) | open (timeout(600s)) |  |
 | 241 | 241 | 71011068 + 4574225sqrt(241) | open (timeout(600s)) |  |

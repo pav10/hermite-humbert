@@ -91,7 +91,7 @@ D	d_K	h_K	eps0	gamma	closed_form	#M	#classes	status	seconds	notes
 146	584	2	145 + 12sqrt(146)	129.3333333333333333333333	388/3	12	19	certified+verified	93	multistart missed the maximum; recovered from the B&B (chart 0)
 149	149	1	(61 + 5sqrt(149))/2	26.79510985900474168817202	?	5	7	certified+verified	12	
 151	604	-	?	-	-	-	-	error:worker exited with code -9	139	
-154	616	-	21295 + 1716sqrt(154)	-	-	-	-	timeout(600s)	601	
+154	616	2	21295 + 1716sqrt(154)	78.98529764357376791687785	(3168 + 48*sqrt(28666))/143	8	28	certified+verified	16667	
 155	620	2	249 + 20sqrt(155)	125.8352756055155374035021	?	6	7	certified+verified	111	
 157	157	1	(213 + 17sqrt(157))/2	20.81604327737706883333666	?	5	7	certified+verified	14	
 158	632	1	7743 + 616sqrt(158)	109.1031799210700449288784	sqrt((4075214447 + 7356085*sqrt(258409))/656496)	6	22	certified+verified	1241	multistart missed the maximum; recovered from the B&B (chart 0); multistart missed the maximum; recovered from the B&B (chart 1)

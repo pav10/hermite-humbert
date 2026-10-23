@@ -1,6 +1,6 @@
 # Hermite–Humbert constants γ_{K,2}, K = Q(√D)
 
-Generated from `gamma_K2.tsv` by `python -m hermite_humbert.tables`. All squarefree D in [2, 299] were attempted: 141 certified (exact mode, certificate re-checked with outward rounding), 39 open.
+Generated from `gamma_K2.tsv` by `python -m hermite_humbert.tables`. All squarefree D in [2, 299] were attempted: 142 certified (exact mode, certificate re-checked with outward rounding), 38 open.
 
 γ is given to 25 significant digits; the per-field JSON files in `fields/` hold 50 digits, every extreme class found, the normal forms and minimal vectors.  `#M` = number of minimal vectors (up to units) of the critical form, `#cl` = number of GL₂(O_K)-classes of extreme forms found (the list of non-critical ones is not certified complete).
 
@@ -89,6 +89,7 @@ Generated from `gamma_K2.tsv` by `python -m hermite_humbert.tables`. All squaref
 | 145 | 145 | 4 | 12 + sqrt(145) | 35.14180761236860648143317 | sqrt((1603584 + 22528·sqrt(4089))/2465) | 8 | 26 | 21 |
 | 146 | 584 | 2 | 145 + 12sqrt(146) | 129.3333333333333333333333 | 388/3 | 12 | 19 | 93 |
 | 149 | 149 | 1 | (61 + 5sqrt(149))/2 | 26.79510985900474168817202 | not found by PSLQ | 5 | 7 | 12 |
+| 154 | 616 | 2 | 21295 + 1716sqrt(154) | 78.98529764357376791687785 | (3168 + 48·sqrt(28666))/143 | 8 | 28 | 16667 |
 | 155 | 620 | 2 | 249 + 20sqrt(155) | 125.8352756055155374035021 | not found by PSLQ | 6 | 7 | 111 |
 | 157 | 157 | 1 | (213 + 17sqrt(157))/2 | 20.81604327737706883333666 | not found by PSLQ | 5 | 7 | 14 |
 | 158 | 632 | 1 | 7743 + 616sqrt(158) | 109.1031799210700449288784 | sqrt((4075214447 + 7356085·sqrt(258409))/656496) | 6 | 22 | 1241 |
@@ -161,7 +162,6 @@ Generated from `gamma_K2.tsv` by `python -m hermite_humbert.tables`. All squaref
 | 134 | 536 | 145925 + 12606sqrt(134) | open (timeout(600s)) |  |
 | 139 | 556 | ? | error:worker exited with code -9 |  |
 | 151 | 604 | ? | error:worker exited with code -9 |  |
-| 154 | 616 | 21295 + 1716sqrt(154) | open (timeout(600s)) |  |
 | 163 | 652 | ? | error:worker exited with code -9 |  |
 | 166 | 664 | ? | error:worker exited with code -9 |  |
 | 177 | 177 | 62423 + 4692sqrt(177) | open (timeout(600s)) |  |

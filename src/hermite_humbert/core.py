@@ -27,6 +27,7 @@ What is rigorous and what is not: see README.md.
 """
 import argparse
 import math
+import os
 import sys
 import time
 
@@ -77,6 +78,33 @@ def _problems(D):
     return [HumbertProblem(D, require_h1=False, chart=c) for c in charts], h
 
 
+def _ck_save(directory, name, obj):
+    """Atomic pickle into the checkpoint directory (no-op without one)."""
+    if directory is None:
+        return
+    import pickle
+    path = os.path.join(directory, name)
+    with open(path + ".tmp", "wb") as fh:
+        pickle.dump(obj, fh, protocol=pickle.HIGHEST_PROTOCOL)
+    os.replace(path + ".tmp", path)
+
+
+def _ck_load(directory, name):
+    if directory is None:
+        return None
+    import pickle
+    path = os.path.join(directory, name)
+    if not os.path.exists(path):
+        return None
+    try:
+        # mpmath numbers are rounded to the *current* precision when unpickled:
+        # load under a precision far above anything saved, so they come back exact
+        with mpmath.workprec(1 << 16), open(path, "rb") as fh:
+            return pickle.load(fh)
+    except Exception:                    # noqa: unreadable -> recompute
+        return None
+
+
 def _slabs(charts, width=1.0, margin=0.25):
     """Cut each chart's region into slabs of width <= `width` in s (only if its
     s-range exceeds 2*width, i.e. for large units); see HumbertProblem.slab."""
@@ -97,11 +125,15 @@ def _slabs(charts, width=1.0, margin=0.25):
 
 
 def compute(D, n_samples=3000, n_seeds=24, dps=100, delta=1e-9, exact=True, verify=False,
-            verbose=True, max_boxes=5e7, jobs=1):
+            verbose=True, max_boxes=5e7, jobs=1, checkpoint=None):
     """Compute gamma_{K,2} for K = Q(sqrt D) (any class number).  Returns a dict
     with the value, closed form, extreme forms found (per chart), and the
     certificate status.  The certificate covers every chart.  jobs > 1 runs the
-    exact-mode branch-and-bound in that many processes (POSIX only)."""
+    exact-mode branch-and-bound in that many processes (POSIX only).
+    checkpoint: a directory; the multistart vertices of every chart/slab and every
+    finished block of the exact-mode branch-and-bound are saved there, and a
+    repeated call with the same arguments resumes from them (the certificate of
+    each block is re-checked in its worker, so nothing large is kept)."""
     t0 = time.time()
     charts, h = _problems(D)
     problems = _slabs(charts)
@@ -115,18 +147,27 @@ def compute(D, n_samples=3000, n_seeds=24, dps=100, delta=1e-9, exact=True, veri
         say("  chart %s: |V| = %s%s" % ("O_K^2" if C.chart is None else C.chart.label(),
                                        "+".join(str(len(P.V)) for P in sl),
                                        "  (%d slabs in s)" % len(sl) if len(sl) > 1 else ""))
+    if checkpoint is not None:
+        os.makedirs(checkpoint, exist_ok=True)
+    opts = "s%d_n%d_d%d" % (n_samples, n_seeds, dps)
     verts = []
     for k, VF in enumerate(VFs):
-        P = problems[k]
-        C = charts[P.chart_index]
-        frac = (P.s_max - P.s_min) / max(C.s_max - C.s_min, 1e-12)
-        # fewer seeds when V is large: a missed maximum is recovered by the B&B
-        seeds = max(6, min(n_seeds, int(n_seeds * 20000 / max(1, len(P.V)))))
-        if frac < 1:
-            seeds = max(4, min(seeds, int(round(2 * n_seeds * frac)) + 1))
-        for v in VF.multistart(n_samples=max(500, int(n_samples * frac)), n_seeds=seeds, dps=dps):
-            v["chart"] = k
-            verts.append(v)
+        vk = _ck_load(checkpoint, "verts_p%d_%s.pkl" % (k, opts))
+        if vk is None:
+            P = problems[k]
+            C = charts[P.chart_index]
+            frac = (P.s_max - P.s_min) / max(C.s_max - C.s_min, 1e-12)
+            # fewer seeds when V is large: a missed maximum is recovered by the B&B
+            seeds = max(6, min(n_seeds, int(n_seeds * 20000 / max(1, len(P.V)))))
+            if frac < 1:
+                seeds = max(4, min(seeds, int(round(2 * n_seeds * frac)) + 1))
+            vk = VF.multistart(n_samples=max(500, int(n_samples * frac)), n_seeds=seeds, dps=dps)
+            for v in vk:
+                v["chart"] = k
+            _ck_save(checkpoint, "verts_p%d_%s.pkl" % (k, opts), vk)
+        verts.extend(vk)
+    extra = _ck_load(checkpoint, "verts_recovered_%s.pkl" % opts) or []
+    verts.extend(extra)
     if not verts:
         raise RuntimeError("no extreme form found")
     notes = []
@@ -137,6 +178,8 @@ def compute(D, n_samples=3000, n_seeds=24, dps=100, delta=1e-9, exact=True, veri
         if v is not None and v["gamma"] > gstar:
             v["chart"] = k
             verts.append(v)
+            extra.append(v)
+            _ck_save(checkpoint, "verts_recovered_%s.pkl" % opts, extra)
             notes.append("multistart missed the maximum; recovered from the B&B (chart %d)" % k)
             return True
         return False
@@ -153,8 +196,12 @@ def compute(D, n_samples=3000, n_seeds=24, dps=100, delta=1e-9, exact=True, veri
                 bbx = BranchAndBound(P, float(gstar), delta=0.0)
                 kw = dict(max_boxes=max_boxes, keep_certificate=verify,
                           exact=(float(gstar), local_vertex_factory(P, VFs[k], dps)))
-                if jobs > 1:
-                    run_parallel(bbx, jobs, **kw)
+                blockwise = jobs > 1 or checkpoint is not None
+                if blockwise:
+                    ck = None if checkpoint is None else \
+                        (checkpoint, "bb_p%d_%s_v%d" % (k, float(gstar).hex(), int(bool(verify))))
+                    run_parallel(bbx, max(1, jobs), ckpt=ck,
+                                 verify_thr=_below(gstar) if verify else None, **kw)
                 else:
                     bbx.run(**kw)
                 if bbx.overflow or bbx.gamma_low > float(gstar) * (1 + 1e-12) or bbx.counterexample is not None:
@@ -170,7 +217,7 @@ def compute(D, n_samples=3000, n_seeds=24, dps=100, delta=1e-9, exact=True, veri
                       and bbx.gamma_low <= float(gstar) * (1 + 1e-12))
                 st = dict(bbx.stats)
                 if verify and ok:
-                    vr = verify_parallel(bbx, _below(gstar), jobs)
+                    vr = bbx.verification if blockwise else verify_parallel(bbx, _below(gstar), jobs)
                     st["verification"] = vr
                     ok = sum(vr["failed"].values()) == 0 and abs(vr["volume_ratio"] - 1) < 1e-9
                     exact_res.setdefault("verification", []).append(vr)
@@ -327,11 +374,14 @@ def main(argv=None):
     ap.add_argument("--quiet", action="store_true")
     ap.add_argument("--jobs", "-j", type=int, default=1,
                     help="processes for the branch-and-bound of each field (default 1)")
+    ap.add_argument("--checkpoint", default=None, metavar="DIR",
+                    help="save progress in DIR (one subdirectory per field) and resume from it")
     a = ap.parse_args(argv)
     rows = []
     for D in a.D:
         r = compute(D, n_samples=a.samples, n_seeds=a.seeds, dps=a.dps, delta=a.delta,
-                    exact=not a.no_exact, verify=a.verify, verbose=not a.quiet, jobs=a.jobs)
+                    exact=not a.no_exact, verify=a.verify, verbose=not a.quiet, jobs=a.jobs,
+                    checkpoint=None if a.checkpoint is None else os.path.join(a.checkpoint, "D%d" % D))
         rows.append(r)
     if len(rows) > 1:
         print("\n%5s %6s  %-22s %-34s %s" % ("D", "d_K", "gamma_{K,2}", "closed form", "status"))

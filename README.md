@@ -50,7 +50,17 @@ field finishes (sorted by D; columns `D, d_K, h_K, eps0, gamma, closed_form, #M,
 eutactic coefficients, certificate statistics) to `fields/D<D>.json` next to it.
 Certified fields are skipped when the command is repeated, so an interrupted
 sweep can simply be restarted; `--timeout` (default 3600 s per field),
-`--jobs`, `--no-verify`, `--redo`.
+`--jobs`, `--field-jobs`, `--no-verify`, `--redo`.
+
+**Checkpoints.**  Each field is checkpointed in `checkpoints/D<D>/` next to the
+table (`--checkpoints DIR`, or `--no-checkpoint`): the multistart vertices and
+every finished block of the branch-and-bound, each block's certificate already
+re-checked in its own process.  A field that is interrupted (time limit, killed
+process, machine restart) resumes from its finished blocks, so even repeated short
+runs make progress (a field with a checkpoint is retried although it timed out
+before); the directory is removed once the field is certified.  Checkpoints are
+keyed by γ* (exact) and the options, so a changed γ* never reuses stale blocks.
+`hermite-humbert D --checkpoint DIR` does the same for a single run.
 
 ## Normalisation
 
@@ -207,8 +217,8 @@ so they sort by the fundamental unit:
 | ε₀ > 10¹² (≈ 1.4·10¹²): outside the double-precision range of the code | 214 |
 
 What would extend the reach (see also "Extensions"): checkpoint/resume of the
-branch-and-bound (the runs above were repeatedly lost to restarts of the machine),
-cutting the high s-slabs into strips in x₁ so the candidate sets stay small, and a
+branch-and-bound (the runs above were repeatedly lost to restarts of the machine;
+now implemented, see "Checkpoints"), cutting the high s-slabs into strips in x₁ so the candidate sets stay small, and a
 compiled per-box kernel.
 
 ## Results (h_K = 1, D < 50; all certified in exact mode with `--verify`)
@@ -341,8 +351,9 @@ Elsewhere:
 - Implemented since: parallel sweeps over fields (`hermite-humbert-sweep`), a parallel
   branch-and-bound and certificate re-check within a field (`--jobs` / `--field-jobs`),
   slabs in s for large units, a vectorised rule-4 re-check.
-- Not yet: a compiled per-box kernel, checkpoint/resume of a field, strips in x₁ for
-  the high s-slabs (see "Open fields").
+- Implemented since: checkpoint/resume of a field (see "Checkpoints").
+- Not yet: a compiled per-box kernel, strips in x₁ for the high s-slabs (see
+  "Open fields").
 - Totally real fields of higher degree (points of ℍⁿ) and n ≥ 3 (γ_{K,n}).
 
 ## References (project files)

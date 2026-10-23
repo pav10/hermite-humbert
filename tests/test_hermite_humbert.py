@@ -344,7 +344,7 @@ def test_parallel_block_death_is_retried(monkeypatch, tmp_path):
 
     def die_once(args):
         # first attempt of every block dies (marker file per block), the retry succeeds
-        marker = tmp_path / ("block_%s" % "_".join("%.12g" % x for x in args[0][0]))
+        marker = tmp_path / ("block_%d" % args[0])
         if not marker.exists():
             marker.touch()
             os._exit(1)
@@ -410,3 +410,32 @@ def up_to_date_verify(bb, thr):
     a = verify_certificate(bb, thr)
     b = verify_certificate(bb, thr, float_rule4=False)
     return a["verified"][4] == b["verified"][4] and a["failed"][4] == b["failed"][4] == 0
+
+
+def test_checkpoint_resume(monkeypatch, tmp_path):
+    """compute(checkpoint=...) saves the multistart vertices and every finished
+    block; after an interrupted run (blocks >= 10 die every time) the next run
+    resumes the saved blocks and completes the proof, re-checked block by block."""
+    import os
+    from hermite_humbert import certify
+    orig = certify._par_task
+    ck = str(tmp_path / "D13")
+    monkeypatch.setattr(certify, "_par_task", lambda args: os._exit(1) if args[0] >= 10 else orig(args))
+    r = compute(13, verbose=False, exact=True, verify=True, n_samples=2000, n_seeds=16, jobs=2, checkpoint=ck)
+    assert not r["exact"]["proved"]
+    saved = sorted(f for f in os.listdir(ck) if f.startswith("bb_"))
+    assert len(saved) == 10 and any(f.startswith("verts_") for f in os.listdir(ck))
+    monkeypatch.setattr(certify, "_par_task", orig)
+    old = mpmath.mp.dps
+    mpmath.mp.dps = 15         # resume at the default precision (as a sweep worker does)
+    try:
+        r = compute(13, verbose=False, exact=True, verify=True, n_samples=2000, n_seeds=16, jobs=2,
+                    checkpoint=ck)
+    finally:
+        mpmath.mp.dps = old
+    assert r["exact"]["proved"]
+    st = r["exact"]["stats"][0]
+    assert st["resumed_blocks"] == 10 and st["lost_blocks"] == 0
+    ver = r["exact"]["verification"][0]
+    assert sum(ver["failed"].values()) == 0 and abs(ver["volume_ratio"] - 1) < 1e-9
+    assert abs(r["gamma"] - PUBLISHED[13][0]) < mpmath.mpf(10) ** -40 * PUBLISHED[13][0]

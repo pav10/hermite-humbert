@@ -1,6 +1,6 @@
 # Hermite–Humbert constants γ_{K,2}, K = Q(√D)
 
-Generated from `gamma_K2.tsv` by `python -m hermite_humbert.tables`. All squarefree D in [2, 299] were attempted: 148 certified (exact mode, certificate re-checked with outward rounding), 32 open.
+Generated from `gamma_K2.tsv` by `python -m hermite_humbert.tables`. All squarefree D in [2, 299] were attempted: 149 certified (exact mode, certificate re-checked with outward rounding), 31 open.
 
 γ is given to 25 significant digits; the per-field JSON files in `fields/` hold 50 digits, every extreme class found, the normal forms and minimal vectors.  `#M` = number of minimal vectors (up to units) of the critical form, `#cl` = number of GL₂(O_K)-classes of extreme forms found (the list of non-critical ones is not certified complete).
 
@@ -102,6 +102,7 @@ Generated from `gamma_K2.tsv` by `python -m hermite_humbert.tables`. All squaref
 | 170 | 680 | 4 | 13 + sqrt(170) | 158.8240744314336403949918 | not found by PSLQ | 5 | 44 | 88 |
 | 173 | 173 | 1 | (13 + sqrt(173))/2 | 35.02241481784980682016859 | (34655 + 551·sqrt(9169))/2496 | 6 | 13 | 12 |
 | 174 | 696 | 2 | 1451 + 110sqrt(174) | 124.0 | 124 | 12 | 24 | 326 |
+| 177 | 177 | 1 | 62423 + 4692sqrt(177) | 14.29787234042553191489362 | 672/47 | 8 | 19 | 5482 |
 | 178 | 712 | 2 | 1601 + 120sqrt(178) | 110.0241200322308295943992 | not found by PSLQ | 8 | 58 | 450 |
 | 181 | 181 | 1 | (1305 + 97sqrt(181))/2 | 17.9196875951156437113957 | root of +157976·x^4 +166635·x^3 -34771032·x^2 -299589840·x^1 -714492900·x^0 | 6 | 9 | 27 |
 | 182 | 728 | 2 | 27 + 2sqrt(182) | 176.6982214495062442193797 | (417079488 + 1763200·sqrt(1244390))/13491751 | 6 | 17 | 64 |
@@ -168,7 +169,6 @@ Generated from `gamma_K2.tsv` by `python -m hermite_humbert.tables`. All squaref
 | 151 | 604 | ? | error:worker exited with code -9 |  |
 | 163 | 652 | ? | error:worker exited with code -9 |  |
 | 166 | 664 | ? | error:worker exited with code -9 |  |
-| 177 | 177 | 62423 + 4692sqrt(177) | open (timeout(600s)) |  |
 | 179 | 716 | 4190210 + 313191sqrt(179) | open (timeout(600s)) |  |
 | 191 | 764 | 8994000 + 650783sqrt(191) | open (timeout(600s)) |  |
 | 193 | 193 | 1764132 + 126985sqrt(193) | open (timeout(600s)) |  |

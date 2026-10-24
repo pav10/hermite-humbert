@@ -1,6 +1,6 @@
 # Hermite–Humbert constants γ_{K,2}, K = Q(√D)
 
-Generated from `gamma_K2.tsv` by `python -m hermite_humbert.tables`. All squarefree D in [2, 299] were attempted: 146 certified (exact mode, certificate re-checked with outward rounding), 34 open.
+Generated from `gamma_K2.tsv` by `python -m hermite_humbert.tables`. All squarefree D in [2, 299] were attempted: 147 certified (exact mode, certificate re-checked with outward rounding), 33 open.
 
 γ is given to 25 significant digits; the per-field JSON files in `fields/` hold 50 digits, every extreme class found, the normal forms and minimal vectors.  `#M` = number of minimal vectors (up to units) of the critical form, `#cl` = number of GL₂(O_K)-classes of extreme forms found (the list of non-critical ones is not certified complete).
 
@@ -109,6 +109,7 @@ Generated from `gamma_K2.tsv` by `python -m hermite_humbert.tables`. All squaref
 | 185 | 185 | 2 | 68 + 5sqrt(185) | 36.12769769502906997511263 | not found by PSLQ | 5 | 8 | 32 |
 | 186 | 744 | 2 | 7501 + 550sqrt(186) | 101.0101010101010101010101 | 10000/99 | 6 | 26 | 2101 |
 | 187 | 748 | 2 | 1682 + 123sqrt(187) | 105.3970987393040026441217 | not found by PSLQ | 5 | 34 | 734 |
+| 190 | 760 | 2 | 52021 + 3774sqrt(190) | 100.8 | 504/5 | 12 | 30 | 272 |
 | 194 | 776 | 2 | 195 + 14sqrt(194) | 146.1240310077519379844961 | 18850/129 | 8 | 15 | 152 |
 | 195 | 780 | 4 | 14 + sqrt(195) | 190.9035758923594004818039 | not found by PSLQ | 6 | 34 | 90 |
 | 197 | 197 | 1 | 14 + sqrt(197) | 38.56106026712438979056314 | (9512 + 29·sqrt(525793))/792 | 6 | 8 | 10 |
@@ -168,7 +169,6 @@ Generated from `gamma_K2.tsv` by `python -m hermite_humbert.tables`. All squaref
 | 166 | 664 | ? | error:worker exited with code -9 |  |
 | 177 | 177 | 62423 + 4692sqrt(177) | open (timeout(600s)) |  |
 | 179 | 716 | 4190210 + 313191sqrt(179) | open (timeout(600s)) |  |
-| 190 | 760 | 52021 + 3774sqrt(190) | open (timeout(600s)) |  |
 | 191 | 764 | 8994000 + 650783sqrt(191) | open (timeout(600s)) |  |
 | 193 | 193 | 1764132 + 126985sqrt(193) | open (timeout(600s)) |  |
 | 199 | 796 | ? | error:worker exited with code -9 |  |

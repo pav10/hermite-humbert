@@ -719,7 +719,8 @@ def _par_child(args, conn):
 def _ckpt_path(ckpt, i):
     import os
     d, prefix = ckpt
-    return os.path.join(d, "%s_b%03d.pkl" % (prefix, i))
+    key = "%03d" % i if isinstance(i, int) else str(i)      # follow-up blocks: "199.0", ...
+    return os.path.join(d, "%s_b%s.pkl" % (prefix, key))
 
 
 def _ckpt_save(ckpt, i, r):
@@ -811,12 +812,47 @@ def run_parallel(bb, jobs, grid=(8, 8, 2, 2), ckpt=None, verify_thr=None, **kw):
         return r["counterexample"] is not None or r["overflow"] or (
             exact is not None and r["gamma_low"] > exact[0] * (1 + 1e-12))
 
+    P = bb.P
+    region_vol = (bb.X1[1] - bb.X1[0]) * (bb.X2[1] - bb.X2[0]) * (P.s_max - P.s_min) * (t_hi - P.t_lo)
     queue = []
+    follow_ups = 0
+
+    def accept(key, r):
+        """Merge a block result (fresh or loaded).  Boxes the block left undecided
+        because it ran out of its box budget (upper bound inf; not a stop) become
+        follow-up blocks key.0 .. key.3, so a block can never fail for lack of
+        budget; their volume is taken out of this block's re-check, since the
+        follow-ups account for it.  Deterministic, so a resume finds the same keys."""
+        nonlocal resumed, follow_ups
+        budget = [(l, h) for l, h, u in r["unresolved"] if len(u) and np.all(np.isinf(u))]
+        if budget and not is_stop(r):
+            r["unresolved"] = [(l, h, u) for l, h, u in r["unresolved"]
+                               if not (len(u) and np.all(np.isinf(u)))]
+            BL = np.vstack([l for l, _ in budget])
+            BH = np.vstack([h for _, h in budget])
+            if r.get("verification") is not None:
+                r["verification"] = dict(r["verification"])
+                r["verification"]["volume_ratio"] -= float(np.prod(BH - BL, axis=1).sum()) / region_vol
+            merge(r)
+            for part, idx in enumerate(np.array_split(np.arange(len(BL)), 4)):
+                if len(idx) == 0:
+                    continue
+                ck_key = "%s.%d" % (key, part)
+                follow_ups += 1
+                rr = _ckpt_load(ckpt, ck_key) if ckpt is not None else None
+                if rr is not None and not is_stop(rr):
+                    resumed += 1
+                    accept(ck_key, rr)
+                else:
+                    queue.append((ck_key, (BL[idx], BH[idx]), 0))
+        else:
+            merge(r)
+
     for i, b in enumerate(blocks):
         r = _ckpt_load(ckpt, i) if ckpt is not None else None
         if r is not None and not is_stop(r):
-            merge(r)
             resumed += 1
+            accept(i, r)
         else:
             queue.append((i, b, 0))
     running = []                              # (process, connection, index, block, attempts)
@@ -866,11 +902,13 @@ def run_parallel(bb, jobs, grid=(8, 8, 2, 2), ckpt=None, verify_thr=None, **kw):
                         lost += 1
                         unresolved.append((blk[0], blk[1], np.full(len(blk[0]), np.inf)))
                     continue
-                merge(r)
                 if is_stop(r):
+                    merge(r)
                     stop = r
-                elif ckpt is not None:
-                    _ckpt_save(ckpt, i, r)
+                else:
+                    if ckpt is not None:
+                        _ckpt_save(ckpt, i, r)          # the raw result; accept() is deterministic
+                    accept(i, r)
             running = still
             if not progressed:
                 time.sleep(0.05)
@@ -896,7 +934,8 @@ def run_parallel(bb, jobs, grid=(8, 8, 2, 2), ckpt=None, verify_thr=None, **kw):
     un_ub = max([float(np.max(u)) for _, _, u in unresolved], default=-np.inf)
     bb.stats = {"boxes": boxes, "discarded_by_rule": counts[:4].tolist() + [n_rule4],
                 "time": time.time() - t0, "unresolved": int(sum(len(u) for _, _, u in unresolved)),
-                "vectors": len(bb.vecs), "jobs": jobs, "lost_blocks": lost, "resumed_blocks": resumed}
+                "vectors": len(bb.vecs), "jobs": jobs, "lost_blocks": lost, "resumed_blocks": resumed,
+                "follow_up_blocks": follow_ups}
     if exact is not None:
         bb.stats["balls"] = len(balls)
     base = bb.gamma_low * (1 + bb.delta) * (1 + bb.safety) if exact is None else float(exact[0])

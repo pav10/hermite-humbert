@@ -439,3 +439,23 @@ def test_checkpoint_resume(monkeypatch, tmp_path):
     ver = r["exact"]["verification"][0]
     assert sum(ver["failed"].values()) == 0 and abs(ver["volume_ratio"] - 1) < 1e-9
     assert abs(r["gamma"] - PUBLISHED[13][0]) < mpmath.mpf(10) ** -40 * PUBLISHED[13][0]
+
+
+def test_budget_follow_up_blocks(tmp_path):
+    """A block that exhausts its box budget hands its undecided boxes to follow-up
+    blocks instead of failing the proof; the re-check still tiles the region
+    (volume 1), and a resumed run loads every block and follow-up."""
+    ck = str(tmp_path / "D13")
+    kw = dict(verbose=False, exact=True, verify=True, n_samples=2000, n_seeds=16, jobs=2,
+              max_boxes=300, checkpoint=ck)
+    r = compute(13, **kw)
+    assert r["exact"]["proved"]
+    st = r["exact"]["stats"][0]
+    assert st["follow_up_blocks"] > 0 and st["unresolved"] == 0
+    ver = r["exact"]["verification"][0]
+    assert sum(ver["failed"].values()) == 0 and abs(ver["volume_ratio"] - 1) < 1e-9
+    r2 = compute(13, **kw)
+    st2 = r2["exact"]["stats"][0]
+    assert r2["exact"]["proved"] and st2["resumed_blocks"] == 256 + st["follow_up_blocks"]
+    assert st2["boxes"] == st["boxes"]
+    assert abs(r["gamma"] - PUBLISHED[13][0]) < mpmath.mpf(10) ** -40 * PUBLISHED[13][0]

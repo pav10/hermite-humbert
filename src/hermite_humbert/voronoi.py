@@ -339,10 +339,8 @@ class MultiplicativeVoronoi:
                 qq = point(hi)
                 ph, _ = self.phig(qq, base)
                 pc, _ = self.phig(qq, cand)
-                for j in np.argsort(pc - ph[0])[:4]:
-                    five = self._five(qq, base, cand[int(j)])
-                    if five is None:
-                        continue
+                new = [cand[int(j)] for j in np.argsort(pc - ph[0]) if pc[j] - ph[0] < 1e-6]
+                for five in self._fives(qq, T4, new):
                     v = self.polish(qq, five)
                     if v is not None and v["perf_rank"] == 5 and \
                             self.hnorm(qq, v["qf"] - qq) < 1e-6 and \
@@ -357,14 +355,21 @@ class MultiplicativeVoronoi:
                 return None
         raise WalkError("edge too long")
 
-    def _five(self, q, base, w):
-        """w plus 4 tied classes whose 5 gradients have rank-4 differences."""
-        _, g = self.phig(q, base + [w])
-        for four in itertools.combinations(range(len(base)), 4):
-            idx = list(four) + [len(base)]
-            if np.linalg.matrix_rank(g[idx[1:]] - g[idx[0]], tol=1e-7) == 4:
-                return [base[i] for i in four] + [w]
-        return None
+    def _fives(self, q, tied, new, k=6):
+        """5-subsets of tied + new (at least one new class) with the best-conditioned
+        difference matrices (largest smallest singular value), best first: at a
+        degenerate vertex a subset of rank 4 near q may be singular at the vertex."""
+        allv = list(tied) + list(new)
+        _, g = self.phig(q, allv)
+        nt = len(tied)
+        scored = []
+        for five in itertools.combinations(range(len(allv)), 5):
+            if max(five) < nt:
+                continue
+            sv = np.linalg.svd(g[list(five[1:])] - g[five[0]], compute_uv=False)
+            scored.append((sv[-1], five))
+        scored.sort(reverse=True)
+        return [[allv[i] for i in five] for sv, five in scored[:k] if sv > 1e-9]
 
     # ------------------------------------------------------------- the walk
     def seed(self):

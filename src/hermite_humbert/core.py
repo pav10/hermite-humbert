@@ -141,20 +141,29 @@ def compute(D, n_samples=3000, n_seeds=24, dps=100, delta=1e-9, exact=True, veri
     say = print if verbose else (lambda *a, **k: None)
     say("K = Q(sqrt(%d)), d_K = %d, eps0 = %s (norm %+d), h_K = %d"
         % (D, F.disc, F.fmt(F.fundamental_unit()), F.unit_norm(), h))
-    VFs = [VertexFinder(P) for P in problems]
+    # one slab's working set V at a time: for large units the sets of all slabs
+    # together do not fit in memory (D = 298), so V is built per slab and released
+    VFs = [None] * len(problems)
+
+    def vf(k):
+        if VFs[k] is None or problems[k].V is None:
+            VFs[k] = VertexFinder(problems[k])
+        return VFs[k]
+
     for c, C in enumerate(charts):
         sl = [P for P in problems if P.chart_index == c]
-        say("  chart %s: |V| = %s%s" % ("O_K^2" if C.chart is None else C.chart.label(),
-                                       "+".join(str(len(P.V)) for P in sl),
-                                       "  (%d slabs in s)" % len(sl) if len(sl) > 1 else ""))
+        say("  chart %s%s" % ("O_K^2" if C.chart is None else C.chart.label(),
+                              "  (%d slabs in s)" % len(sl) if len(sl) > 1 else ""))
     if checkpoint is not None:
         os.makedirs(checkpoint, exist_ok=True)
     opts = "s%d_n%d_d%d" % (n_samples, n_seeds, dps)
     verts = []
-    for k, VF in enumerate(VFs):
+    for k in range(len(problems)):
         vk = _ck_load(checkpoint, "verts_p%d_%s.pkl" % (k, opts))
         if vk is None:
+            VF = vf(k)
             P = problems[k]
+            say("  part %d: |V| = %d" % (k, len(P.V)))
             C = charts[P.chart_index]
             frac = (P.s_max - P.s_min) / max(C.s_max - C.s_min, 1e-12)
             # fewer seeds when V is large: a missed maximum is recovered by the B&B
@@ -165,6 +174,7 @@ def compute(D, n_samples=3000, n_seeds=24, dps=100, delta=1e-9, exact=True, veri
             for v in vk:
                 v["chart"] = k
             _ck_save(checkpoint, "verts_p%d_%s.pkl" % (k, opts), vk)
+            P.release_V()
         verts.extend(vk)
     extra = _ck_load(checkpoint, "verts_recovered_%s.pkl" % opts) or []
     verts.extend(extra)
@@ -174,7 +184,8 @@ def compute(D, n_samples=3000, n_seeds=24, dps=100, delta=1e-9, exact=True, veri
 
     def recover(k, point):
         """Vertex search from a point where a B&B saw G > gamma*."""
-        v = VFs[k].find_vertex(point, dps=dps)
+        v = vf(k).find_vertex(point, dps=dps)
+        problems[k].release_V()
         if v is not None and v["gamma"] > gstar:
             v["chart"] = k
             verts.append(v)
@@ -195,7 +206,7 @@ def compute(D, n_samples=3000, n_seeds=24, dps=100, delta=1e-9, exact=True, veri
             for k, P in enumerate(problems):
                 bbx = BranchAndBound(P, float(gstar), delta=0.0)
                 kw = dict(max_boxes=max_boxes, keep_certificate=verify,
-                          exact=(float(gstar), local_vertex_factory(P, VFs[k], dps)))
+                          exact=(float(gstar), local_vertex_factory(P, vf(k), dps)))
                 blockwise = jobs > 1 or checkpoint is not None
                 if blockwise:
                     ck = None if checkpoint is None else \
@@ -209,6 +220,7 @@ def compute(D, n_samples=3000, n_seeds=24, dps=100, delta=1e-9, exact=True, veri
                     if bbx.counterexample is not None:
                         qc = bbx.counterexample[1]
                         pt = np.array([qc[0], qc[1], math.exp(qc[2]), math.exp(qc[3])])
+                    P.release_V()
                     if pt is not None and recover(k, pt):
                         restart = True
                         break
@@ -224,6 +236,7 @@ def compute(D, n_samples=3000, n_seeds=24, dps=100, delta=1e-9, exact=True, veri
                 exact_res["stats"].append(st)
                 exact_res["balls"] += len(bbx.balls)
                 exact_res["proved"] &= ok
+                P.release_V()
             if restart:
                 continue
             say("exact mode: %s  [%d certified balls around maximisers, %d boxes, %.1fs]%s"

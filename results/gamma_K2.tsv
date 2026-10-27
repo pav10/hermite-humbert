@@ -148,7 +148,7 @@ D	d_K	h_K	eps0	gamma	closed_form	#M	#classes	status	seconds	notes
 238	952	-	?	-	-	-	-	error:worker exited with code -9	4787	
 239	956	-	6195120 + 400729sqrt(239)	-	-	-	-	timeout(600s)	603	
 241	241	-	71011068 + 4574225sqrt(241)	-	-	-	-	timeout(600s)	602	
-246	984	-	88805 + 5662sqrt(246)	-	-	-	-	timeout(600s)	602	
+246	984	2	88805 + 5662sqrt(246)	90.05139323970778453946678	(456435 + 315*sqrt(2447454))/10541	6	56	certified+verified	5408	
 247	988	2	85292 + 5427sqrt(247)	106.5654875311818542839685	?	6	51	certified+verified	5433	
 249	249	-	8553815 + 542076sqrt(249)	-	-	-	-	timeout(600s)	604	
 251	1004	-	3674890 + 231957sqrt(251)	-	-	-	-	timeout(600s)	602	

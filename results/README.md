@@ -1,6 +1,6 @@
 # Hermite–Humbert constants γ_{K,2}, K = Q(√D)
 
-Generated from `gamma_K2.tsv` by `python -m hermite_humbert.tables`. All squarefree D in [2, 299] were attempted: 150 certified (exact mode, certificate re-checked with outward rounding), 30 open.
+Generated from `gamma_K2.tsv` by `python -m hermite_humbert.tables`. All squarefree D in [2, 299] were attempted: 151 certified (exact mode, certificate re-checked with outward rounding), 29 open.
 
 γ is given to 25 significant digits; the per-field JSON files in `fields/` hold 50 digits, every extreme class found, the normal forms and minimal vectors.  `#M` = number of minimal vectors (up to units) of the critical form, `#cl` = number of GL₂(O_K)-classes of extreme forms found (the list of non-critical ones is not certified complete).
 
@@ -135,6 +135,7 @@ Generated from `gamma_K2.tsv` by `python -m hermite_humbert.tables`. All squaref
 | 233 | 233 | 1 | 23156 + 1517sqrt(233) | 21.55223588735510986644336 | (4221 + 23·sqrt(63609))/465 | 8 | 15 | 1163 |
 | 235 | 940 | 6 | 46 + 3sqrt(235) | 281.3333333333333333333333 | 844/3 | 12 | 32 | 115 |
 | 237 | 237 | 1 | (77 + 5sqrt(237))/2 | 52.05321322379350258242317 | (3341 + 13·sqrt(33654))/110 | 6 | 9 | 16 |
+| 246 | 984 | 2 | 88805 + 5662sqrt(246) | 90.05139323970778453946678 | (456435 + 315·sqrt(2447454))/10541 | 6 | 56 | 5408 |
 | 247 | 988 | 2 | 85292 + 5427sqrt(247) | 106.5654875311818542839685 | not found by PSLQ | 6 | 51 | 5433 |
 | 253 | 253 | 1 | (1861 + 117sqrt(253))/2 | 29.80017586949852871966498 | (2968 + 14·sqrt(41239))/195 | 6 | 8 | 68 |
 | 254 | 1016 | 3 | 255 + 16sqrt(254) | 183.96502699255344900787 | (288708 + 2744·sqrt(228346))/8697 | 6 | 11 | 232 |
@@ -181,7 +182,6 @@ Generated from `gamma_K2.tsv` by `python -m hermite_humbert.tables`. All squaref
 | 238 | 952 | ? | error:worker exited with code -9 |  |
 | 239 | 956 | 6195120 + 400729sqrt(239) | open (timeout(600s)) |  |
 | 241 | 241 | 71011068 + 4574225sqrt(241) | open (timeout(600s)) |  |
-| 246 | 984 | 88805 + 5662sqrt(246) | open (timeout(600s)) |  |
 | 249 | 249 | 8553815 + 542076sqrt(249) | open (timeout(600s)) |  |
 | 251 | 1004 | 3674890 + 231957sqrt(251) | open (timeout(600s)) |  |
 | 259 | 1036 | 847225 + 52644sqrt(259) | open (timeout(600s)) |  |

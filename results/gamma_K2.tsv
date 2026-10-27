@@ -61,7 +61,7 @@ D	d_K	h_K	eps0	gamma	closed_form	#M	#classes	status	seconds	notes
 97	97	1	5604 + 569sqrt(97)	9.203775266718728137730558	?	5	6	certified+verified	184	
 101	101	1	10 + sqrt(101)	20.43279138324829349045647	root of +14008896*x^4 -263485440*x^3 -454196937*x^2 -218654280*x^1 -24403600*x^0	6	5	certified+verified	6	
 102	408	2	101 + 10sqrt(102)	65.78139371412541068410852	?	5	14	certified+verified	64	
-103	412	-	227528 + 22419sqrt(103)	-	-	-	-	timeout(600s)	600	
+103	412	1	227528 + 22419sqrt(103)	43.51540967300445075647341	(4978153 + 7525*sqrt(364105))/218746	6	23	certified+verified	1123	
 105	105	2	41 + 4sqrt(105)	25.6	128/5	20	11	certified+verified	33	
 106	424	2	4005 + 389sqrt(106)	49.64822447367066369731992	(5488 + 196*sqrt(2279))/299	6	26	certified+verified	404	
 107	428	1	962 + 93sqrt(107)	89.33333333333333333333333	268/3	12	7	certified+verified	77	multistart missed the maximum; recovered from the B&B (chart 0)
@@ -80,7 +80,7 @@ D	d_K	h_K	eps0	gamma	closed_form	#M	#classes	status	seconds	notes
 130	520	4	57 + 5sqrt(130)	117.5746928976112621939321	?	7	42	certified+verified	110	
 131	524	1	10610 + 927sqrt(131)	91.24247715388868951606651	?	6	21	certified+verified	1063	
 133	133	1	(173 + 15sqrt(133))/2	25.35189132471370082228578	sqrt((284417232 + 19662720*sqrt(209))/884801)	6	10	certified+verified	17	
-134	536	-	145925 + 12606sqrt(134)	-	-	-	-	timeout(600s)	600	
+134	536	-	145925 + 12606sqrt(134)	-	-	-	-	error:LinAlgError('Matrix is not positive definite')	170	
 137	137	1	1744 + 149sqrt(137)	13.29484444968345650799662	(75 + sqrt(15481))/15	8	5	certified+verified	77	
 138	552	2	47 + 4sqrt(138)	103.3665441328872985576472	root of +18993975*x^4 -2030474684*x^3 +8390518332*x^2 -145380006912*x^1 -478111399936*x^0	6	15	certified+verified	60	
 139	556	-	?	-	-	-	-	error:worker exited with code -9	235	

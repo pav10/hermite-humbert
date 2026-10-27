@@ -1,6 +1,6 @@
 # Hermite–Humbert constants γ_{K,2}, K = Q(√D)
 
-Generated from `gamma_K2.tsv` by `python -m hermite_humbert.tables`. All squarefree D in [2, 299] were attempted: 152 certified (exact mode, certificate re-checked with outward rounding), 28 open.
+Generated from `gamma_K2.tsv` by `python -m hermite_humbert.tables`. All squarefree D in [2, 299] were attempted: 153 certified (exact mode, certificate re-checked with outward rounding), 27 open.
 
 γ is given to 25 significant digits; the per-field JSON files in `fields/` hold 50 digits, every extreme class found, the normal forms and minimal vectors.  `#M` = number of minimal vectors (up to units) of the critical form, `#cl` = number of GL₂(O_K)-classes of extreme forms found (the list of non-critical ones is not certified complete).
 
@@ -67,6 +67,7 @@ Generated from `gamma_K2.tsv` by `python -m hermite_humbert.tables`. All squaref
 | 97 | 97 | 1 | 5604 + 569sqrt(97) | 9.203775266718728137730558 | not found by PSLQ | 5 | 6 | 184 |
 | 101 | 101 | 1 | 10 + sqrt(101) | 20.43279138324829349045647 | root of +14008896·x^4 -263485440·x^3 -454196937·x^2 -218654280·x^1 -24403600·x^0 | 6 | 5 | 6 |
 | 102 | 408 | 2 | 101 + 10sqrt(102) | 65.78139371412541068410852 | not found by PSLQ | 5 | 14 | 64 |
+| 103 | 412 | 1 | 227528 + 22419sqrt(103) | 43.51540967300445075647341 | (4978153 + 7525·sqrt(364105))/218746 | 6 | 23 | 1123 |
 | 105 | 105 | 2 | 41 + 4sqrt(105) | 25.6 | 128/5 | 20 | 11 | 33 |
 | 106 | 424 | 2 | 4005 + 389sqrt(106) | 49.64822447367066369731992 | (5488 + 196·sqrt(2279))/299 | 6 | 26 | 404 |
 | 107 | 428 | 1 | 962 + 93sqrt(107) | 89.33333333333333333333333 | 268/3 | 12 | 7 | 77 |
@@ -164,10 +165,9 @@ Generated from `gamma_K2.tsv` by `python -m hermite_humbert.tables`. All squaref
 | D | d_K | ε₀ | status | notes |
 |---|---|---|---|---|
 | 94 | 376 | 2143295 + 221064sqrt(94) | open (timeout(600s)) |  |
-| 103 | 412 | 227528 + 22419sqrt(103) | open (timeout(600s)) |  |
 | 118 | 472 | 306917 + 28254sqrt(118) | open (timeout(600s)) |  |
 | 127 | 508 | 4730624 + 419775sqrt(127) | open (timeout(600s)) |  |
-| 134 | 536 | 145925 + 12606sqrt(134) | open (timeout(600s)) |  |
+| 134 | 536 | 145925 + 12606sqrt(134) | error:LinAlgError('Matrix is not positive definite') |  |
 | 139 | 556 | ? | error:worker exited with code -9 |  |
 | 151 | 604 | ? | error:worker exited with code -9 |  |
 | 163 | 652 | ? | error:worker exited with code -9 |  |

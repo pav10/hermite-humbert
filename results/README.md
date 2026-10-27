@@ -1,6 +1,6 @@
 # Hermite–Humbert constants γ_{K,2}, K = Q(√D)
 
-Generated from `gamma_K2.tsv` by `python -m hermite_humbert.tables`. All squarefree D in [2, 299] were attempted: 151 certified (exact mode, certificate re-checked with outward rounding), 29 open.
+Generated from `gamma_K2.tsv` by `python -m hermite_humbert.tables`. All squarefree D in [2, 299] were attempted: 152 certified (exact mode, certificate re-checked with outward rounding), 28 open.
 
 γ is given to 25 significant digits; the per-field JSON files in `fields/` hold 50 digits, every extreme class found, the normal forms and minimal vectors.  `#M` = number of minimal vectors (up to units) of the critical form, `#cl` = number of GL₂(O_K)-classes of extreme forms found (the list of non-critical ones is not certified complete).
 
@@ -142,6 +142,7 @@ Generated from `gamma_K2.tsv` by `python -m hermite_humbert.tables`. All squaref
 | 255 | 1020 | 4 | 16 + sqrt(255) | 244.0534071395832182138812 | not found by PSLQ | 6 | 47 | 125 |
 | 257 | 257 | 3 | 16 + sqrt(257) | 52.20959108828043506409141 | not found by PSLQ | 6 | 15 | 24 |
 | 258 | 1032 | 2 | 257 + 16sqrt(258) | 204.3313609467455621301775 | 34532/169 | 8 | 12 | 273 |
+| 263 | 1052 | 1 | 139128 + 8579sqrt(263) | 179.4803198101675803333791 | (-9784749 + 22250·sqrt(393185))/23217 | 6 | 25 | 5318 |
 | 265 | 265 | 2 | 6072 + 373sqrt(265) | 34.11495928280415260166428 | not found by PSLQ | 6 | 23 | 375 |
 | 266 | 1064 | 2 | 685 + 42sqrt(266) | 146.6837585305355713275827 | not found by PSLQ | 6 | 52 | 669 |
 | 267 | 1068 | 2 | 2402 + 147sqrt(267) | 133.152405871109804672629 | not found by PSLQ | 6 | 43 | 1299 |
@@ -185,7 +186,6 @@ Generated from `gamma_K2.tsv` by `python -m hermite_humbert.tables`. All squaref
 | 249 | 249 | 8553815 + 542076sqrt(249) | open (timeout(600s)) |  |
 | 251 | 1004 | 3674890 + 231957sqrt(251) | open (timeout(600s)) |  |
 | 259 | 1036 | 847225 + 52644sqrt(259) | open (timeout(600s)) |  |
-| 263 | 1052 | 139128 + 8579sqrt(263) | open (timeout(600s)) |  |
 | 271 | 1084 | ? | error:worker exited with code -9 |  |
 | 281 | 281 | 1063532 + 63445sqrt(281) | open (timeout(600s)) |  |
 | 286 | 1144 | 561835 + 33222sqrt(286) | open (timeout(600s)) |  |

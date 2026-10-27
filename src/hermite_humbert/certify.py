@@ -126,6 +126,12 @@ class BranchAndBound:
                                max(P.s_max - P.s_min, 1e-9), 1.0])
         self.stats = {}
         self.use_corner = use_corner
+        # split priority = width * (sens + split_mix * max sens + 1e-3); only speed
+        # depends on it (every discarded box is certified by a rule).  A small mix
+        # matters for large units: there the bound is loose only in x1 (y1 = e^(t-s)
+        # is tiny), and 0.2 kept splitting the other directions (D = 43: 1.7e6 boxes
+        # with 0.2, 2.0e4 with 0.01; 0 can stall on a direction with zero sensitivity)
+        self.split_mix = 0.01
 
     # ------------------------------------------------------------ geometry
     def r_ranges(self, lo, hi):
@@ -421,7 +427,7 @@ class BranchAndBound:
                 lo, hi, width, sens, ub = lo[~tiny], hi[~tiny], width[~tiny], sens[~tiny], ub[~tiny]
                 if len(lo) == 0:
                     continue
-            pri = width * (sens + 0.2 * sens.max(axis=1, keepdims=True) + 1e-3)
+            pri = width * (sens + self.split_mix * sens.max(axis=1, keepdims=True) + 1e-3)
             pri = np.where(width > 0, pri, -1)
             dim = np.argmax(pri, axis=1)
             r = np.arange(len(lo))
@@ -890,6 +896,12 @@ def run_parallel(bb, jobs, grid=(8, 8, 2, 2), ckpt=None, verify_thr=None, **kw):
                     continue
                 else:
                     proc.join()
+                    # it may have sent its result and exited after the poll above
+                    if conn.poll():
+                        try:
+                            r = conn.recv()
+                        except EOFError:
+                            r = None
                 if proc is not None:
                     conn.close()
                 progressed = True

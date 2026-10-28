@@ -10,3 +10,4 @@ venv/
 .DS_Store
 *.tmp
 results/checkpoints/
+results/perfect/run.log

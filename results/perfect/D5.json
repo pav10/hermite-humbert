@@ -1,0 +1,108 @@
+{
+ "D": 5,
+ "h_K": 1,
+ "n_perfect": 1,
+ "n_extreme": 1,
+ "n_weakly_eutactic": 0,
+ "n_not_eutactic": 0,
+ "gamma_max": "1.78885438199983175712733893",
+ "gamma_max_matches_certified": true,
+ "stats": [
+  {
+   "boxes": 1348,
+   "leaves": 15,
+   "newton": 57,
+   "vertices": 1,
+   "discarded": [
+    305,
+    439,
+    427
+   ],
+   "vectors": 13,
+   "time": 0.056266069412231445
+  }
+ ],
+ "status": "COMPLETE",
+ "classes": [
+  {
+   "index": 0,
+   "gamma": "1.788854381999831757127338934985020988352",
+   "closed_form": "4*sqrt(5)/5",
+   "n_min": 5,
+   "perf_rank": 5,
+   "eutaxy": "extreme",
+   "eutaxy_margin": 0.4,
+   "eutactic_coefficients": [
+    "0.4",
+    "0.4",
+    "0.4",
+    "0.4",
+    "0.4"
+   ],
+   "aut": 10,
+   "self_conjugate": true,
+   "conjugate_of": null,
+   "copies_found": 1,
+   "chart": 0,
+   "point": [
+    0.8090169943749475,
+    -0.30901699437494745,
+    -0.531393614981222,
+    -0.050181789921618494
+   ],
+   "vectors_OK": [
+    [
+     [
+      "0",
+      "0"
+     ],
+     [
+      "1",
+      "0"
+     ]
+    ],
+    [
+     [
+      "0",
+      "1"
+     ],
+     [
+      "-1",
+      "0"
+     ]
+    ],
+    [
+     [
+      "0",
+      "1"
+     ],
+     [
+      "0",
+      "-1"
+     ]
+    ],
+    [
+     [
+      "1",
+      "0"
+     ],
+     [
+      "0",
+      "-1"
+     ]
+    ],
+    [
+     [
+      "1",
+      "0"
+     ],
+     [
+      "0",
+      "0"
+     ]
+    ]
+   ]
+  }
+ ],
+ "seconds": 1
+}

@@ -9,6 +9,12 @@ One line per field is appended to the TSV file as soon as the field finishes
 written to <details>/D<D>.json.  Fields whose line already says "certified" are
 skipped, so re-running the same command resumes the sweep; fields that timed
 out are retried (with the new time limit).
+
+Each field is checkpointed in <checkpoints>/D<D>/ (default: next to the table):
+the multistart vertices and every finished block of the branch-and-bound, each
+block's certificate already re-checked.  A field that was interrupted (time
+limit, killed process, machine restart) resumes from there, so even repeated
+short runs make progress; the directory is removed once the field is certified.
 """
 import argparse
 import csv
@@ -62,7 +68,7 @@ def jsonable(x):
     return repr(x)
 
 
-def run_field(D, timeout=0, verify=True, details=None, field_jobs=1):
+def run_field(D, timeout=0, verify=True, details=None, field_jobs=1, checkpoints=None):
     """Compute one field; returns (D, TSV row as a dict).  Never raises."""
     from .core import compute
     F = RealQuadraticField(D)
@@ -77,7 +83,8 @@ def run_field(D, timeout=0, verify=True, details=None, field_jobs=1):
     if timeout:
         signal.alarm(int(timeout))
     try:
-        r = compute(D, verbose=False, exact=True, verify=verify, jobs=field_jobs)
+        ck = os.path.join(checkpoints, "D%d" % D) if checkpoints else None
+        r = compute(D, verbose=False, exact=True, verify=verify, jobs=field_jobs, checkpoint=ck)
         signal.alarm(0)
         ex = r["exact"]
         if ex and ex["proved"]:
@@ -92,6 +99,9 @@ def run_field(D, timeout=0, verify=True, details=None, field_jobs=1):
             os.makedirs(details, exist_ok=True)
             with open(os.path.join(details, "D%d.json" % D), "w") as fh:
                 json.dump(jsonable(r), fh, indent=1)
+        if ck and st.startswith("certified"):
+            import shutil
+            shutil.rmtree(ck, ignore_errors=True)       # done: the checkpoint is no longer needed
     except _Timeout:
         row["status"] = "timeout(%ds)" % timeout
     except Exception as e:      # noqa
@@ -149,9 +159,15 @@ def main(argv=None):
     ap.add_argument("--details", default=None,
                     help="directory for per-field JSON (default: <out dir>/fields)")
     ap.add_argument("--no-verify", action="store_true", help="skip the outward-rounded re-check")
+    ap.add_argument("--checkpoints", default=None,
+                    help="directory for per-field checkpoints (default: <out dir>/checkpoints); "
+                         "an interrupted field resumes from its finished blocks")
+    ap.add_argument("--no-checkpoint", action="store_true", help="do not checkpoint fields")
     ap.add_argument("--redo", action="store_true", help="recompute fields already certified")
     a = ap.parse_args(argv)
     details = a.details or os.path.join(os.path.dirname(os.path.abspath(a.out)), "fields")
+    checkpoints = None if a.no_checkpoint else (
+        a.checkpoints or os.path.join(os.path.dirname(os.path.abspath(a.out)), "checkpoints"))
     rows = read_table(a.out)
 
     def pending(D):
@@ -161,12 +177,16 @@ def main(argv=None):
         if st.startswith("certified"):
             return False
         if st.startswith("timeout(") and a.timeout:
-            # already timed out with at least this time limit: retrying cannot help
+            # already timed out with at least this time limit: retrying only helps
+            # if it resumes from a checkpoint (then every retry makes progress)
+            if checkpoints and os.path.isdir(os.path.join(checkpoints, "D%d" % D)) \
+                    and os.listdir(os.path.join(checkpoints, "D%d" % D)):
+                return True
             return int(st[len("timeout("):].rstrip("s)")) < a.timeout
         return True
     todo = [D for D in parse_fields(a.fields) if pending(D)]
     print("%d fields to compute with %d worker(s)" % (len(todo), a.jobs), flush=True)
-    jobs = [(D, a.timeout, not a.no_verify, details, a.field_jobs) for D in todo]
+    jobs = [(D, a.timeout, not a.no_verify, details, a.field_jobs, checkpoints) for D in todo]
 
     def record(D, row):
         rows[D] = row
@@ -225,8 +245,8 @@ def run_isolated(jobs, n_parallel, timeout, record, grace=120, poll=1.0):
 
 
 def _child(argjson):
-    D, timeout, verify, details, field_jobs = json.loads(argjson)
-    _, row = run_field(D, timeout, verify, details, field_jobs)
+    D, timeout, verify, details, field_jobs, checkpoints = json.loads(argjson)
+    _, row = run_field(D, timeout, verify, details, field_jobs, checkpoints)
     print(json.dumps(row), flush=True)
 
 

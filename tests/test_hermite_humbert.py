@@ -344,7 +344,7 @@ def test_parallel_block_death_is_retried(monkeypatch, tmp_path):
 
     def die_once(args):
         # first attempt of every block dies (marker file per block), the retry succeeds
-        marker = tmp_path / ("block_%s" % "_".join("%.12g" % x for x in args[0][0]))
+        marker = tmp_path / ("block_%d" % args[0])
         if not marker.exists():
             marker.touch()
             os._exit(1)
@@ -410,3 +410,72 @@ def up_to_date_verify(bb, thr):
     a = verify_certificate(bb, thr)
     b = verify_certificate(bb, thr, float_rule4=False)
     return a["verified"][4] == b["verified"][4] and a["failed"][4] == b["failed"][4] == 0
+
+
+def test_checkpoint_resume(monkeypatch, tmp_path):
+    """compute(checkpoint=...) saves the multistart vertices and every finished
+    block; after an interrupted run (blocks >= 10 die every time) the next run
+    resumes the saved blocks and completes the proof, re-checked block by block."""
+    import os
+    from hermite_humbert import certify
+    orig = certify._par_task
+    ck = str(tmp_path / "D13")
+    monkeypatch.setattr(certify, "_par_task", lambda args: os._exit(1) if args[0] >= 10 else orig(args))
+    r = compute(13, verbose=False, exact=True, verify=True, n_samples=2000, n_seeds=16, jobs=2, checkpoint=ck)
+    assert not r["exact"]["proved"]
+    saved = sorted(f for f in os.listdir(ck) if f.startswith("bb_"))
+    assert len(saved) == 10 and any(f.startswith("verts_") for f in os.listdir(ck))
+    monkeypatch.setattr(certify, "_par_task", orig)
+    old = mpmath.mp.dps
+    mpmath.mp.dps = 15         # resume at the default precision (as a sweep worker does)
+    try:
+        r = compute(13, verbose=False, exact=True, verify=True, n_samples=2000, n_seeds=16, jobs=2,
+                    checkpoint=ck)
+    finally:
+        mpmath.mp.dps = old
+    assert r["exact"]["proved"]
+    st = r["exact"]["stats"][0]
+    assert st["resumed_blocks"] == 10 and st["lost_blocks"] == 0
+    ver = r["exact"]["verification"][0]
+    assert sum(ver["failed"].values()) == 0 and abs(ver["volume_ratio"] - 1) < 1e-9
+    assert abs(r["gamma"] - PUBLISHED[13][0]) < mpmath.mpf(10) ** -40 * PUBLISHED[13][0]
+
+
+def test_budget_follow_up_blocks(tmp_path):
+    """A block that exhausts its box budget hands its undecided boxes to follow-up
+    blocks instead of failing the proof; the re-check still tiles the region
+    (volume 1), and a resumed run loads every block and follow-up."""
+    ck = str(tmp_path / "D13")
+    kw = dict(verbose=False, exact=True, verify=True, n_samples=2000, n_seeds=16, jobs=2,
+              max_boxes=300, checkpoint=ck)
+    r = compute(13, **kw)
+    assert r["exact"]["proved"]
+    st = r["exact"]["stats"][0]
+    assert st["follow_up_blocks"] > 0 and st["unresolved"] == 0
+    ver = r["exact"]["verification"][0]
+    assert sum(ver["failed"].values()) == 0 and abs(ver["volume_ratio"] - 1) < 1e-9
+    r2 = compute(13, **kw)
+    st2 = r2["exact"]["stats"][0]
+    assert r2["exact"]["proved"] and st2["resumed_blocks"] == 256 + st["follow_up_blocks"]
+    assert st2["boxes"] == st["boxes"]
+    assert abs(r["gamma"] - PUBLISHED[13][0]) < mpmath.mpf(10) ** -40 * PUBLISHED[13][0]
+
+
+def test_perfect_forms_literature():
+    """Box enumeration of all perfect forms (multiplicative normalisation) against
+    the published classifications: Q(sqrt 2), Q(sqrt 5) have one perfect form
+    [BCIO01]; Q(sqrt 13) has two, both extreme, the critical one with 6 minimal
+    vectors and gamma = (84 + 6 sqrt 91)/35 [PW05]; Q(sqrt 10) (h = 2) as found by
+    the independent Voronoi walk (7 perfect, 5 extreme)."""
+    from hermite_humbert.perfect import perfect_forms
+    for D, n in ((2, 1), (5, 1)):
+        r = perfect_forms(D)
+        assert len(r["classes"]) == n and r["classes"][0]["rep"]["extreme"]
+    assert perfect_forms(5)["classes"][0]["aut"] == 10
+    r = perfect_forms(13)
+    reps = sorted((c["rep"] for c in r["classes"]), key=lambda v: -v["gamma"])
+    assert len(reps) == 2 and all(v["extreme"] for v in reps)
+    assert [len(v["vectors"]) for v in reps] == [6, 5]
+    assert abs(reps[0]["gamma"] - (84 + 6 * mpmath.sqrt(91)) / 35) < mpmath.mpf(10) ** -40
+    r = perfect_forms(10)
+    assert len(r["classes"]) == 7 and sum(c["rep"]["extreme"] for c in r["classes"]) == 5

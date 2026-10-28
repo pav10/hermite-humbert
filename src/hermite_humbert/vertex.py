@@ -282,6 +282,14 @@ class VertexFinder:
         return pts
 
     def find_vertex(self, p0, dps=60):
+        # a search heuristic: for large units the float Gram matrices of some
+        # (perturbed) starts are numerically not positive definite -> skip the start
+        try:
+            return self._find_vertex(p0, dps)
+        except np.linalg.LinAlgError:
+            return None
+
+    def _find_vertex(self, p0, dps):
         p, A = self.ascend(p0)
         for attempt in range(3):
             pn, idx = self.newton_float(p, A)

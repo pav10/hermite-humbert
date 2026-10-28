@@ -126,6 +126,12 @@ class BranchAndBound:
                                max(P.s_max - P.s_min, 1e-9), 1.0])
         self.stats = {}
         self.use_corner = use_corner
+        # split priority = width * (sens + split_mix * max sens + 1e-3); only speed
+        # depends on it (every discarded box is certified by a rule).  A small mix
+        # matters for large units: there the bound is loose only in x1 (y1 = e^(t-s)
+        # is tiny), and 0.2 kept splitting the other directions (D = 43: 1.7e6 boxes
+        # with 0.2, 2.0e4 with 0.01; 0 can stall on a direction with zero sensitivity)
+        self.split_mix = 0.01
 
     # ------------------------------------------------------------ geometry
     def r_ranges(self, lo, hi):
@@ -421,7 +427,7 @@ class BranchAndBound:
                 lo, hi, width, sens, ub = lo[~tiny], hi[~tiny], width[~tiny], sens[~tiny], ub[~tiny]
                 if len(lo) == 0:
                     continue
-            pri = width * (sens + 0.2 * sens.max(axis=1, keepdims=True) + 1e-3)
+            pri = width * (sens + self.split_mix * sens.max(axis=1, keepdims=True) + 1e-3)
             pri = np.where(width > 0, pri, -1)
             dim = np.argmax(pri, axis=1)
             r = np.arange(len(lo))
@@ -677,18 +683,28 @@ _PAR = {}
 
 
 def _par_task(args):
-    """Worker: run the B&B of _PAR['bb'] on one block of initial boxes."""
-    lo, hi, balls = args
+    """Worker: run the B&B of _PAR['bb'] on one block of initial boxes.  With
+    _PAR['verify_thr'] set, the block's certificate is re-checked right here
+    (verify_certificate, with the balls this block used) and only the counts and
+    the volume fraction are returned, not the boxes: memory and checkpoints stay
+    O(one block)."""
+    i, lo, hi, balls = args
     bb = _PAR["bb"]
     bb.gamma_low = _PAR["gamma_low"]
     bb.overflow = False
     bb.run(init=(lo, hi), balls=balls, **_PAR["kw"])
     keep = _PAR["kw"].get("keep_certificate", False)
-    return {"certificate": bb.certificate if keep else None, "cert4": bb.cert4 if keep else [],
-            "balls": bb.balls, "unresolved": bb.unresolved, "stats": bb.stats,
-            "counterexample": bb.counterexample, "overflow": bb.overflow,
-            "gamma_low": bb.gamma_low, "best_point": bb.best_point, "t_hi": bb.t_hi,
-            "n_rule4": bb.n_rule4}
+    thr = _PAR.get("verify_thr")
+    out = {"index": i, "balls": bb.balls, "unresolved": bb.unresolved, "stats": bb.stats,
+           "counterexample": bb.counterexample, "overflow": bb.overflow,
+           "gamma_low": bb.gamma_low, "best_point": bb.best_point, "t_hi": bb.t_hi,
+           "n_rule4": bb.n_rule4, "certificate": None, "cert4": [], "verification": None}
+    if thr is not None:
+        if bb.counterexample is None and not bb.overflow:
+            out["verification"] = verify_certificate(bb, thr)
+    elif keep:
+        out["certificate"], out["cert4"] = bb.certificate, bb.cert4
+    return out
 
 
 def _par_child(args, conn):
@@ -706,18 +722,57 @@ def _par_child(args, conn):
         os._exit(0)
 
 
-def run_parallel(bb, jobs, grid=(8, 8, 2, 2), **kw):
+def _ckpt_path(ckpt, i):
+    import os
+    d, prefix = ckpt
+    key = "%03d" % i if isinstance(i, int) else str(i)      # follow-up blocks: "199.0", ...
+    return os.path.join(d, "%s_b%s.pkl" % (prefix, key))
+
+
+def _ckpt_save(ckpt, i, r):
+    """Atomic write of one finished block's result."""
+    import os
+    import pickle
+    path = _ckpt_path(ckpt, i)
+    tmp = path + ".tmp"
+    with open(tmp, "wb") as fh:
+        pickle.dump(r, fh, protocol=pickle.HIGHEST_PROTOCOL)
+    os.replace(tmp, path)
+
+
+def _ckpt_load(ckpt, i):
+    import os
+    import pickle
+    path = _ckpt_path(ckpt, i)
+    if not os.path.exists(path):
+        return None
+    try:
+        import mpmath
+        with mpmath.workprec(1 << 16), open(path, "rb") as fh:   # see core._ck_load
+            return pickle.load(fh)
+    except Exception:                    # noqa: truncated / unreadable -> recompute
+        return None
+
+
+def run_parallel(bb, jobs, grid=(8, 8, 2, 2), ckpt=None, verify_thr=None, **kw):
     """bb.run(**kw) split over `jobs` processes: the initial grid (finer than the
-    serial one) is dealt out block by block to a process pool; certified balls
-    found by finished blocks are handed to the blocks started later.  The
-    results (certificate, balls, unresolved boxes, statistics) are merged into
-    bb exactly as a serial run would leave them, so verify_certificate(bb, ...)
-    applies unchanged (the union of the blocks tiles the region).  Stops early
-    at the first counterexample / overflow.  Each block runs in its own forked
-    process (not a multiprocessing.Pool, which waits forever for a task whose
-    worker died): a block whose process dies is retried once and otherwise left
-    unresolved, so the certificate fails rather than the run hanging.  Needs the
-    'fork' start method."""
+    serial one) is dealt out block by block, one forked process per block;
+    certified balls found by finished blocks are handed to the blocks started
+    later.  The results (balls, unresolved boxes, statistics; the certificate, or
+    with verify_thr its re-check) are merged into bb as a serial run would leave
+    them (the union of the blocks tiles the region).
+
+    verify_thr: re-check every block's certificate inside its own process
+    (verify_certificate with that threshold) and keep only the counts and volume
+    fractions; their sums are bb.verification (same totals as re-checking the
+    merged certificate; boxes are never collected in the parent).
+    ckpt = (directory, prefix): every finished block's result is saved there, and
+    blocks already saved are loaded instead of recomputed, so an interrupted run
+    resumes.  The prefix must identify the problem, gamma* and the options.
+
+    A block whose process dies is retried once and otherwise left unresolved, so
+    the certificate fails rather than the run hanging.  Stops early at the first
+    counterexample / overflow.  Needs the 'fork' start method."""
     import multiprocessing as mp
     t0 = time.time()
     exact = kw.get("exact")
@@ -725,17 +780,18 @@ def run_parallel(bb, jobs, grid=(8, 8, 2, 2), **kw):
     t_hi = 0.5 * math.log(1.0 / (bb.gamma_low if exact is None else thr_exact))
     lo, hi = bb.initial_boxes(t_hi, n=grid)
     blocks = [(lo[i:i + 1], hi[i:i + 1]) for i in range(len(lo))]
+    if verify_thr is not None:
+        kw = dict(kw, keep_certificate=True)
     _PAR.clear()
-    _PAR.update(bb=bb, gamma_low=bb.gamma_low, kw=kw)
+    _PAR.update(bb=bb, gamma_low=bb.gamma_low, kw=kw, verify_thr=verify_thr)
     balls = []
-    cert, cert4, unresolved = ([] if kw.get("keep_certificate") else None), [], []
+    keep = kw.get("keep_certificate") and verify_thr is None
+    cert, cert4, unresolved = ([] if keep else None), [], []
     counts = np.zeros(5, dtype=np.int64)
-    boxes, n_rule4, stop = 0, 0, None
+    boxes, n_rule4, stop, lost, resumed = 0, 0, None, 0, 0
     best = (bb.gamma_low, bb.best_point)
+    ver = {"verified": {r: 0 for r in range(5)}, "failed": {r: 0 for r in range(5)}, "volume_ratio": 0.0}
     ctx = mp.get_context("fork")
-    queue = [(b, 0) for b in blocks]          # (block, attempts so far)
-    running = []                              # (process, connection, block, attempts)
-    lost = 0
 
     def merge(r):
         nonlocal boxes, n_rule4, best, counts
@@ -751,50 +807,127 @@ def run_parallel(bb, jobs, grid=(8, 8, 2, 2), **kw):
         n_rule4 += r["n_rule4"]
         if r["gamma_low"] > best[0] and r["best_point"] is not None:
             best = (r["gamma_low"], r["best_point"])
+        v = r.get("verification")
+        if v is not None:
+            for key in ("verified", "failed"):
+                for rr, c in v[key].items():
+                    ver[key][rr] = ver[key].get(rr, 0) + c
+            ver["volume_ratio"] += v["volume_ratio"]
 
+    def is_stop(r):
+        return r["counterexample"] is not None or r["overflow"] or (
+            exact is not None and r["gamma_low"] > exact[0] * (1 + 1e-12))
+
+    P = bb.P
+    region_vol = (bb.X1[1] - bb.X1[0]) * (bb.X2[1] - bb.X2[0]) * (P.s_max - P.s_min) * (t_hi - P.t_lo)
+    queue = []
+    follow_ups = 0
+
+    def accept(key, r):
+        """Merge a block result (fresh or loaded).  Boxes the block left undecided
+        because it ran out of its box budget (upper bound inf; not a stop) become
+        follow-up blocks key.0 .. key.3, so a block can never fail for lack of
+        budget; their volume is taken out of this block's re-check, since the
+        follow-ups account for it.  Deterministic, so a resume finds the same keys."""
+        nonlocal resumed, follow_ups
+        budget = [(l, h) for l, h, u in r["unresolved"] if len(u) and np.all(np.isinf(u))]
+        if budget and not is_stop(r):
+            r["unresolved"] = [(l, h, u) for l, h, u in r["unresolved"]
+                               if not (len(u) and np.all(np.isinf(u)))]
+            BL = np.vstack([l for l, _ in budget])
+            BH = np.vstack([h for _, h in budget])
+            if r.get("verification") is not None:
+                r["verification"] = dict(r["verification"])
+                r["verification"]["volume_ratio"] -= float(np.prod(BH - BL, axis=1).sum()) / region_vol
+            merge(r)
+            for part, idx in enumerate(np.array_split(np.arange(len(BL)), 4)):
+                if len(idx) == 0:
+                    continue
+                ck_key = "%s.%d" % (key, part)
+                follow_ups += 1
+                rr = _ckpt_load(ckpt, ck_key) if ckpt is not None else None
+                if rr is not None and not is_stop(rr):
+                    resumed += 1
+                    accept(ck_key, rr)
+                else:
+                    queue.append((ck_key, (BL[idx], BH[idx]), 0))
+        else:
+            merge(r)
+
+    for i, b in enumerate(blocks):
+        r = _ckpt_load(ckpt, i) if ckpt is not None else None
+        if r is not None and not is_stop(r):
+            resumed += 1
+            accept(i, r)
+        else:
+            queue.append((i, b, 0))
+    running = []                              # (process, connection, index, block, attempts)
     try:
         while (queue or running) and stop is None:
             while queue and len(running) < jobs:
-                (blo, bhi), att = queue.pop(0)
+                i, (blo, bhi), att = queue.pop(0)
+                if jobs <= 1:
+                    # one process: run the block here (no fork overhead); errors are
+                    # handled like a dead block process
+                    try:
+                        r = _par_task((i, blo, bhi, list(balls)))
+                    except Exception as e:          # noqa
+                        r = {"error": repr(e)}
+                    running.append((None, r, i, (blo, bhi), att))
+                    continue
                 recv_end, send_end = ctx.Pipe(duplex=False)
-                proc = ctx.Process(target=_par_child, args=((blo, bhi, list(balls)), send_end))
+                proc = ctx.Process(target=_par_child, args=((i, blo, bhi, list(balls)), send_end))
                 proc.start()
                 send_end.close()
-                running.append((proc, recv_end, (blo, bhi), att))
+                running.append((proc, recv_end, i, (blo, bhi), att))
             still, progressed = [], False
-            for proc, conn, blk, att in running:
+            for proc, conn, i, blk, att in running:
                 r = None
-                if conn.poll():
+                if proc is None:                    # in-process block: conn is its result
+                    r = conn
+                elif conn.poll():
                     try:
                         r = conn.recv()
                     except EOFError:            # died without a result
                         r = None
                     proc.join()
                 elif proc.is_alive():
-                    still.append((proc, conn, blk, att))
+                    still.append((proc, conn, i, blk, att))
                     continue
                 else:
                     proc.join()
-                conn.close()
+                    # it may have sent its result and exited after the poll above
+                    if conn.poll():
+                        try:
+                            r = conn.recv()
+                        except EOFError:
+                            r = None
+                if proc is not None:
+                    conn.close()
                 progressed = True
                 if r is None or "error" in r:
                     # the block's process died (e.g. killed) or raised: retry once, then
                     # leave the block unresolved (the certificate then fails, it never hangs)
                     if att == 0:
-                        queue.append((blk, 1))
+                        queue.append((i, blk, 1))
                     else:
                         lost += 1
                         unresolved.append((blk[0], blk[1], np.full(len(blk[0]), np.inf)))
                     continue
-                merge(r)
-                if r["counterexample"] is not None or r["overflow"] or (
-                        exact is not None and r["gamma_low"] > exact[0] * (1 + 1e-12)):
+                if is_stop(r):
+                    merge(r)
                     stop = r
+                else:
+                    if ckpt is not None:
+                        _ckpt_save(ckpt, i, r)          # the raw result; accept() is deterministic
+                    accept(i, r)
             running = still
             if not progressed:
                 time.sleep(0.05)
     finally:
-        for proc, conn, _, _ in running:       # early stop (or an exception): clean up
+        for proc, conn, _, _, _ in running:    # early stop (or an exception): clean up
+            if proc is None:
+                continue
             proc.terminate()
             proc.join()
             conn.close()
@@ -807,12 +940,14 @@ def run_parallel(bb, jobs, grid=(8, 8, 2, 2), **kw):
     bb.gamma_low, bb.best_point = best
     bb.counterexample = stop["counterexample"] if stop else None
     bb.overflow = bool(stop and stop["overflow"])
+    bb.verification = ver if verify_thr is not None else None
     if stop is not None:            # the remaining blocks count as unresolved
         unresolved.append((lo, hi, np.full(len(lo), np.inf)))
     un_ub = max([float(np.max(u)) for _, _, u in unresolved], default=-np.inf)
     bb.stats = {"boxes": boxes, "discarded_by_rule": counts[:4].tolist() + [n_rule4],
                 "time": time.time() - t0, "unresolved": int(sum(len(u) for _, _, u in unresolved)),
-                "vectors": len(bb.vecs), "jobs": jobs, "lost_blocks": lost}
+                "vectors": len(bb.vecs), "jobs": jobs, "lost_blocks": lost, "resumed_blocks": resumed,
+                "follow_up_blocks": follow_ups}
     if exact is not None:
         bb.stats["balls"] = len(balls)
     base = bb.gamma_low * (1 + bb.delta) * (1 + bb.safety) if exact is None else float(exact[0])

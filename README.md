@@ -50,7 +50,17 @@ field finishes (sorted by D; columns `D, d_K, h_K, eps0, gamma, closed_form, #M,
 eutactic coefficients, certificate statistics) to `fields/D<D>.json` next to it.
 Certified fields are skipped when the command is repeated, so an interrupted
 sweep can simply be restarted; `--timeout` (default 3600 s per field),
-`--jobs`, `--no-verify`, `--redo`.
+`--jobs`, `--field-jobs`, `--no-verify`, `--redo`.
+
+**Checkpoints.**  Each field is checkpointed in `checkpoints/D<D>/` next to the
+table (`--checkpoints DIR`, or `--no-checkpoint`): the multistart vertices and
+every finished block of the branch-and-bound, each block's certificate already
+re-checked in its own process.  A field that is interrupted (time limit, killed
+process, machine restart) resumes from its finished blocks, so even repeated short
+runs make progress (a field with a checkpoint is retried although it timed out
+before); the directory is removed once the field is certified.  Checkpoints are
+keyed by γ* (exact) and the options, so a changed γ* never reuses stale blocks.
+`hermite-humbert D --checkpoint DIR` does the same for a single run.
 
 ## Normalisation
 
@@ -152,14 +162,15 @@ Measured on one core (Python/numpy):
   faster now), e.g. D = 101, 197, 257 (h = 3) in 4, 6, 16 s; Q(√227) (d = 908) in 80 s.
 - The cost is heavy-tailed and not predicted by (d, ε₀): near-degenerate maxima
   (now handled by rule 4 and scaled balls) and extreme unit skew (Q(√46), ε₀ ≈ 4.9·10⁴:
-  x₁ must be resolved at scale y₁ ≈ 10⁻³, estimated 10⁷–10⁸ boxes at ~10⁴ boxes/s).
+  x₁ must be resolved at scale y₁ ≈ 10⁻³; certified with 9.4·10⁷ boxes in 26 min on
+  4 cores, before the split-priority fix of "Open fields" below).
 - Hard limit: ε₀ ≤ 10¹² (double precision).
 
 Estimate (not a guarantee): the current code handles most D up to a few hundred with
 ε₀ ≲ 10³ in minutes; large-unit fields need hours.  Remaining improvements, in order
-of expected payoff: parallelism over initial boxes and charts (embarrassingly
-parallel), a compiled kernel for the per-box work (numba), checkpoint/resume,
-extended precision for ε₀ > 10¹².
+of expected payoff: a parallel vertex search over slabs, a compiled kernel for the
+per-box work (numba), extended precision for ε₀ > 10¹² (parallel blocks and
+checkpoint/resume are implemented).
 
 ## Class number > 1 (Steinitz charts)
 
@@ -179,7 +190,7 @@ both directions against the chart-independent O_K² minimum.
 
 ## Recomputation of all squarefree D ≤ 300 (current code)
 
-**141 of the 182 squarefree D ≤ 300 are certified** (exact mode, every certificate
+**157 of the 182 squarefree D ≤ 300 are certified** (exact mode, every certificate
 re-checked with outward rounding).  The table is `results/gamma_K2.tsv` (one row per
 field; rendered in `results/README.md`), and `results/fields/D<D>.json` holds the
 full result of each field (all extreme classes found, normal forms, minimal
@@ -188,28 +199,47 @@ produced by
 
     hermite-humbert-sweep results/gamma_K2.tsv 2-300 -j 4 --timeout 600              # all fields, 10 min each
     hermite-humbert-sweep results/gamma_K2.tsv <D> -j 1 --field-jobs 4 --timeout 0   # then each timed-out field
+    hermite-humbert-sweep results/gamma_K2.tsv <D> -j 1 --field-jobs 2 --timeout 0 --redo   # memory-killed fields
+
+with checkpoints (`--checkpoints`, the default), so runs interrupted by restarts of
+the machine resumed where they stopped.  The long fields took 0.2–15 h each on 4
+cores (D = 206: 14.6 h, before the split-priority fix below).
 
 Where both exist, the values agree to 20 digits with the original runs (the
 tables further down, kept for reference: 51 fields).
 
 ### Open fields (D ≤ 300)
 
-The remaining 41 fields are open: none was disproved, they were not finished.
-Cost and memory grow roughly like √ε₀ (the region is long in the unit direction),
-so they sort by the fundamental unit:
+The remaining 25 fields are open: none was disproved, they were not finished.
+Cost and memory grow with ε₀ (the region is long in the unit direction), so they
+sort by the fundamental unit:
 
 | reason | fields (ε₀) |
 |---|---|
-| not finished within the time given (1 h for 46, 67; 10 min for the rest), ε₀ ≤ 10⁶; feasible with `--field-jobs 4 --timeout 0` on a machine that is not interrupted (estimated 0.5–2 h each from the phase-2 runs that finished) | 46 (4.9·10⁴), 67 (9.8·10⁴), 103 (4.6·10⁵), 118 (6.1·10⁵), 134 (2.9·10⁵), 154 (4.3·10⁴), 177 (1.2·10⁵), 190 (1.0·10⁵), 206 (1.2·10⁵), 209 (9.3·10⁴), 233 (4.6·10⁴), 246 (1.8·10⁵), 247 (1.7·10⁵), 263 (2.8·10⁵), 298 (8.2·10⁵) |
-| killed for memory with 4 processes (16 GB machine); retry with `--field-jobs 2` | 238 (2.3·10⁴) |
-| ε₀ between 10⁶ and 10⁸: timed out at 10 min, not retried (hours to days each with the current code) | 94, 127, 179, 191, 193, 201, 217, 239, 249, 251, 259, 281, 286, 295 |
-| ε₀ > 10⁸: the candidate-vector set alone exceeds 16 GB (D = 139: 3.2·10⁷ vectors, 13.6 GB) | 139, 151, 163, 166, 199, 211, 241, 262, 271, 283 |
+| ε₀ between 10⁶ and 10⁸: timed out at 10 min, not retried (likely a day or more each) | 201, 286, 259, 281, 193, 295, 94, 251, 217, 179, 127, 239, 249, 191 |
+| ε₀ > 10⁸: killed for memory (16 GB machine) or not run; candidate sets of 10⁷–10⁸ vectors per field (D = 139: 3.2·10⁷ vectors, 13.6 GB when all slabs were held at once) | 163, 241, 139, 262, 283, 166, 151, 199, 271, 211 |
 | ε₀ > 10¹² (≈ 1.4·10¹²): outside the double-precision range of the code | 214 |
 
-What would extend the reach (see also "Extensions"): checkpoint/resume of the
-branch-and-bound (the runs above were repeatedly lost to restarts of the machine),
-cutting the high s-slabs into strips in x₁ so the candidate sets stay small, and a
-compiled per-box kernel.
+For four certified fields the closed form was not identified (PSLQ up to degree 4
+at the precision used); the table gives the certified value with `?`: D = 118, 134,
+238, 247, 298.
+
+What made the last 16 fields with ε₀ ≤ 10⁶ finish (all of them are now certified):
+
+- checkpoint/resume of the vertex search and of every branch-and-bound block, with
+  follow-up blocks for blocks that exhaust their box budget (see "Checkpoints");
+- the split priority: boxes are bisected mostly along the direction in which the
+  bound is loose.  For large units that is x₁ (y₁ = e^(t−s) ≈ 10⁻⁴), and the old
+  mixing weight kept bisecting the other directions; with the new weight D = 43 needs
+  2.0·10⁴ boxes instead of 1.7·10⁶, and the rest of D = 247 (stuck for days in
+  follow-up blocks) finished in 1.5 h;
+- one slab's candidate set in memory at a time (D = 238 and 298 were killed for memory);
+- skipping vertex-search starts whose float Gram matrix is numerically indefinite
+  (D = 134), and a race in the parallel scheduler that could lose a finished block.
+
+What would extend the reach further: a parallel vertex search over slabs, cutting
+the high s-slabs into strips in x₁ so the candidate sets stay small, a compiled
+per-box kernel, and extended precision for ε₀ > 10¹².
 
 ## Results (h_K = 1, D < 50; all certified in exact mode with `--verify`)
 
@@ -341,8 +371,9 @@ Elsewhere:
 - Implemented since: parallel sweeps over fields (`hermite-humbert-sweep`), a parallel
   branch-and-bound and certificate re-check within a field (`--jobs` / `--field-jobs`),
   slabs in s for large units, a vectorised rule-4 re-check.
-- Not yet: a compiled per-box kernel, checkpoint/resume of a field, strips in x₁ for
-  the high s-slabs (see "Open fields").
+- Implemented since: checkpoint/resume of a field (see "Checkpoints").
+- Not yet: a compiled per-box kernel, strips in x₁ for the high s-slabs (see
+  "Open fields").
 - Totally real fields of higher degree (points of ℍⁿ) and n ≥ 3 (γ_{K,n}).
 
 ## References (project files)

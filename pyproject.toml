@@ -18,6 +18,7 @@ features = ["sympy"]
 [project.scripts]
 hermite-humbert = "hermite_humbert.core:main"
 hermite-humbert-sweep = "hermite_humbert.sweep:main"
+hermite-humbert-perfect = "hermite_humbert.perfect:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

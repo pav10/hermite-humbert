@@ -324,6 +324,10 @@ class HumbertProblem:
         self.VA1, self.VB1, self.VA2, self.VB2 = A1, B1, A2, B2
         return vecs
 
+    def release_V(self):
+        """Drop the working set V (large for large units; rebuilt on demand)."""
+        self.V = self.VC = self.VA1 = self.VB1 = self.VA2 = self.VB2 = None
+
     def G_V(self, P, max_elems=2e6):
         """min_v f_v over V at points P (array (N, 4) or (4,)); returns (values, argmins).
         Evaluated in chunks of about max_elems (points x vectors)."""

@@ -185,7 +185,12 @@ class PerfectSearch:
                 rows = [self._logN_mp(qm, v) for v in vecs]
                 Fv = mpmath.matrix([r[0] for r in rows])
                 J = mpmath.matrix([r[1] for r in rows])
-                dq = mpmath.lu_solve(J, -Fv)
+                try:
+                    dq = mpmath.lu_solve(J, -Fv)
+                except ZeroDivisionError:
+                    # these 4 classes are degenerate at the point (rank < 4): another
+                    # 4-subset of the leaf finds the vertex if there is one
+                    return
                 qm = qm + dq
                 if mpmath.norm(dq, mpmath.inf) < mpmath.mpf(10) ** (-(self.dps + 3)):
                     break

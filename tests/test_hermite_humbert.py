@@ -459,3 +459,23 @@ def test_budget_follow_up_blocks(tmp_path):
     assert r2["exact"]["proved"] and st2["resumed_blocks"] == 256 + st["follow_up_blocks"]
     assert st2["boxes"] == st["boxes"]
     assert abs(r["gamma"] - PUBLISHED[13][0]) < mpmath.mpf(10) ** -40 * PUBLISHED[13][0]
+
+
+def test_perfect_forms_literature():
+    """Box enumeration of all perfect forms (multiplicative normalisation) against
+    the published classifications: Q(sqrt 2), Q(sqrt 5) have one perfect form
+    [BCIO01]; Q(sqrt 13) has two, both extreme, the critical one with 6 minimal
+    vectors and gamma = (84 + 6 sqrt 91)/35 [PW05]; Q(sqrt 10) (h = 2) as found by
+    the independent Voronoi walk (7 perfect, 5 extreme)."""
+    from hermite_humbert.perfect import perfect_forms
+    for D, n in ((2, 1), (5, 1)):
+        r = perfect_forms(D)
+        assert len(r["classes"]) == n and r["classes"][0]["rep"]["extreme"]
+    assert perfect_forms(5)["classes"][0]["aut"] == 10
+    r = perfect_forms(13)
+    reps = sorted((c["rep"] for c in r["classes"]), key=lambda v: -v["gamma"])
+    assert len(reps) == 2 and all(v["extreme"] for v in reps)
+    assert [len(v["vectors"]) for v in reps] == [6, 5]
+    assert abs(reps[0]["gamma"] - (84 + 6 * mpmath.sqrt(91)) / 35) < mpmath.mpf(10) ** -40
+    r = perfect_forms(10)
+    assert len(r["classes"]) == 7 and sum(c["rep"]["extreme"] for c in r["classes"]) == 5

@@ -177,5 +177,5 @@ D	d_K	h_K	eps0	gamma	closed_form	#M	#classes	status	seconds	notes
 291	1164	4	290 + 17sqrt(291)	208.6453828301716176025777	(31659 + 221*sqrt(73041))/438	6	14	certified+verified	364	
 293	293	1	(17 + sqrt(293))/2	70.91729571582393048880001	(3979868 + 999*sqrt(99846489))/196880	6	12	certified+verified	16	
 295	1180	-	2024999 + 117900sqrt(295)	-	-	-	-	timeout(600s)	602	
-298	1192	-	?	-	-	-	-	error:worker exited with code -9	6434	
+298	1192	2	409557 + 23725sqrt(298)	165.3463537220687171512064	?	6	31	certified+verified	4924	
 299	1196	2	415 + 24sqrt(299)	198.4853727941330975348761	?	6	10	certified+verified	421	

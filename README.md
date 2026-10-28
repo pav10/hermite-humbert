@@ -190,7 +190,7 @@ both directions against the chart-independent O_K² minimum.
 
 ## Recomputation of all squarefree D ≤ 300 (current code)
 
-**156 of the 182 squarefree D ≤ 300 are certified** (exact mode, every certificate
+**157 of the 182 squarefree D ≤ 300 are certified** (exact mode, every certificate
 re-checked with outward rounding).  The table is `results/gamma_K2.tsv` (one row per
 field; rendered in `results/README.md`), and `results/fields/D<D>.json` holds the
 full result of each field (all extreme classes found, normal forms, minimal
@@ -210,22 +210,21 @@ tables further down, kept for reference: 51 fields).
 
 ### Open fields (D ≤ 300)
 
-The remaining 26 fields are open: none was disproved, they were not finished.
+The remaining 25 fields are open: none was disproved, they were not finished.
 Cost and memory grow with ε₀ (the region is long in the unit direction), so they
 sort by the fundamental unit:
 
 | reason | fields (ε₀) |
 |---|---|
-| ε₀ < 10⁶, still running: 21 slabs in s with up to 6·10⁶ candidate vectors each; the (serial) vertex search alone takes about 1 h per slab | 298 (8.2·10⁵) |
 | ε₀ between 10⁶ and 10⁸: timed out at 10 min, not retried (likely a day or more each) | 201, 286, 259, 281, 193, 295, 94, 251, 217, 179, 127, 239, 249, 191 |
 | ε₀ > 10⁸: killed for memory (16 GB machine) or not run; candidate sets of 10⁷–10⁸ vectors per field (D = 139: 3.2·10⁷ vectors, 13.6 GB when all slabs were held at once) | 163, 241, 139, 262, 283, 166, 151, 199, 271, 211 |
 | ε₀ > 10¹² (≈ 1.4·10¹²): outside the double-precision range of the code | 214 |
 
 For four certified fields the closed form was not identified (PSLQ up to degree 4
 at the precision used); the table gives the certified value with `?`: D = 118, 134,
-238, 247.
+238, 247, 298.
 
-What made the last 15 fields with ε₀ ≤ 10⁶ finish:
+What made the last 16 fields with ε₀ ≤ 10⁶ finish (all of them are now certified):
 
 - checkpoint/resume of the vertex search and of every branch-and-bound block, with
   follow-up blocks for blocks that exhaust their box budget (see "Checkpoints");

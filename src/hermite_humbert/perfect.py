@@ -335,16 +335,23 @@ def main(argv=None):
             D = todo.pop(0)
             cmd = [sys.executable, "-m", "hermite_humbert.perfect", "--child", str(D), str(a.w_min),
                    str(cert[D]) if D in cert else "-"]
-            running.append((subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True),
-                            D, time.time()))
+            # child output goes to files: a pipe read only after exit would block a chatty child
+            log = os.path.join(a.out, "D%d" % D)
+            fo, fe = open(log + ".out", "w"), open(log + ".err", "w")
+            running.append((subprocess.Popen(cmd, stdout=fo, stderr=fe, text=True), D, time.time(), log))
+            fo.close()
+            fe.close()
         still = []
-        for p, D, t0 in running:
+        for p, D, t0, log in running:
             if p.poll() is None and time.time() - t0 < a.timeout:
-                still.append((p, D, t0))
+                still.append((p, D, t0, log))
                 continue
             if p.poll() is None:
                 p.kill()
-            out, err = p.communicate()
+            p.wait()
+            out, err = open(log + ".out").read(), open(log + ".err").read()
+            os.remove(log + ".out")
+            os.remove(log + ".err")
             lines = [ln for ln in out.splitlines() if ln.startswith("{")]
             if p.returncode == 0 and lines:
                 rec = json.loads(lines[-1])

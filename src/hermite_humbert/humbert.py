@@ -34,9 +34,15 @@ from .field import RealQuadraticField
 def lll_gram(G, delta=0.99):
     """LLL-reduce the lattice with Gram matrix G (float).  Returns an integer
     unimodular matrix T (list of lists, columns = new basis in old coords)."""
-    n = G.shape[0]
     L = np.linalg.cholesky(G)          # G = L L^T ; basis vectors = columns of L^T
-    Bm = L.T.copy()
+    return lll_basis(L.T, delta)
+
+
+def lll_basis(B, delta=0.99):
+    """LLL-reduce the lattice spanned by the columns of B (float).  Returns T as in
+    lll_gram (the Gram matrix is B^T B)."""
+    n = B.shape[1]
+    Bm = np.array(B, dtype=float)
     T = [[int(i == j) for j in range(n)] for i in range(n)]
 
     def gso(Bm):
@@ -75,13 +81,20 @@ def lll_gram(G, delta=0.99):
     return T
 
 
-def fincke_pohst(G, bound):
+def fincke_pohst(G, bound, B=None):
     """All x in Z^n, x != 0, with x^T G x <= bound (one of each pair +-x).
-    G float positive definite.  LLL-preconditioned; small relative slack."""
+    G float positive definite.  LLL-preconditioned; small relative slack.
+    If a basis B with G = B^T B is given, LLL and the reduced Gram matrix are
+    computed from B (no Cholesky of a possibly ill-conditioned G)."""
     n = G.shape[0]
-    T = lll_gram(G)
-    Tm = np.array(T, dtype=float)
-    Gr = Tm.T @ G @ Tm
+    if B is None:
+        T = lll_gram(G)
+        Tm = np.array(T, dtype=float)
+        Gr = Tm.T @ G @ Tm
+    else:
+        T = lll_basis(B)
+        Br = B @ np.array(T, dtype=float)
+        Gr = Br.T @ Br
     Q = Gr.copy()
     for i in range(n):
         for j in range(i + 1, n):
@@ -357,6 +370,9 @@ class HumbertProblem:
         E1 = np.array([[ae[0], af[0], 0, 0], [0, 0, be[0], bf[0]]])
         E2 = np.array([[ae[1], af[1], 0, 0], [0, 0, be[1], bf[1]]])
         G1, G2 = E1.T @ S1 @ E1, E2.T @ S2 @ E2
+        # S_i[E_i z] = |R_i E_i z|^2: an explicit basis of the Z^4-form below, which is
+        # very ill-conditioned for large eps0 (G1 and G2 have rank 2)
+        R1E1, R2E2 = np.linalg.cholesky(S1).T @ E1, np.linalg.cholesky(S2).T @ E2
         Lw = 4.0 * math.log(self.eps)
         k = max(1, int(math.ceil(Lw / 2.0)))
         wl = Lw / k
@@ -364,7 +380,8 @@ class HumbertProblem:
         found = {}
         for j in range(k):
             c = math.exp(0.5 * (-0.5 * Lw + (j + 0.5) * wl))
-            for z in fincke_pohst(G1 / c + c * G2, math.sqrt(bound) * fac):
+            Bc = np.vstack([R1E1 / math.sqrt(c), R2E2 * math.sqrt(c)])
+            for z in fincke_pohst(G1 / c + c * G2, math.sqrt(bound) * fac, B=Bc):
                 v = (self.A.elem(z[0], z[1]), self.B.elem(z[2], z[3]))
                 fv = float(self.f_exact_list(p, [v])[0])
                 if fv <= bound * (1 + 1e-9):

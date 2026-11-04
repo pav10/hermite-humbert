@@ -80,11 +80,16 @@ $S_1[v^{(1)}]+S_2[v^{(2)}]$ of Koecher, Leibak and Gunnells--Yasaki
 \cite{Leibak,LeibakThesis,GY}: the minimum is a product rather than a sum, so it is not a
 linear function of $S$, and there is no Ryshkov polyhedron.  The two are never mixed below;
 the additive theory is the subject of the companion project \texttt{pav10/perfect\_forms},
-which we only quote for comparison.
+which we only quote for comparison.  (In the additive theory Ong \cite{Ong} classified the binary
+perfect forms over $\Q(\sqrt2)$, $\Q(\sqrt3)$, $\Q(\sqrt5)$ with Koecher's method: $2$, $3$, $2$
+classes, the same numbers as in the certified census of \texttt{perfect\_forms}; Ash \cite{Ash}
+uses the same Voronoi--Koecher decompositions of self-adjoint cones.  Neither concerns the
+multiplicative forms studied here.)
 
-Known values.  Cohn \cite{Cohn1} computed the lowest points of the Hilbert modular
-fundamental domain for $\Q(\sqrt2)$, $\Q(\sqrt3)$, $\Q(\sqrt5)$, which give $\gK$ there, and
-these values were established rigorously in \cite{BCIO}.  Pohst and Wagner obtained
+Known values.  Cohn \cite{Cohn1} and Claus \cite{Claus} computed the lowest points of the
+Hilbert modular fundamental domain for $\Q(\sqrt2)$, $\Q(\sqrt3)$, $\Q(\sqrt5)$, which give $\gK$
+there (Claus determines them exactly, together with the boundary manifolds of the fundamental
+domain), and these values were established rigorously in \cite{BCIO}.  Pohst and Wagner obtained
 $\Q(\sqrt{13})$ and the extreme forms of $\Q(\sqrt{17})$ having a unimodular pair of minimal
 vectors, without deciding whether these are all \cite{PW05}; then $\Q(\sqrt6)$ ($\gK=5$) and
 $\Q(\sqrt{21})$ ($\gK=16/3$), and conjectured the values for $\Q(\sqrt7)$ and $\Q(\sqrt{11})$
@@ -385,7 +390,8 @@ median fraction extreme & $0.332$\\
 \item \CERT{} In every one of the $157$ fields the largest $\gamma$ of a perfect class equals the
 certified $\gK$ (relative difference $\le10^{-12}$).
 \item \CERT{} Agreement with the literature.  $D=2,3,5$: one class each \cite{BCIO}
-($|\Aut|=10$ for $D=5$).  $D=13$: two perfect classes, both extreme, $\gamma=(84+6\sqrt{91})/35
+($|\Aut|=10$ for $D=5$), with $\gamma=(12+8\sqrt6)/15$, $4$, $4/\sqrt5$, the reciprocals of the
+heights $N(y)=(2\sqrt6-3)/4$, $1/4$, $\sqrt5/4$ of Claus's lowest points \cite[S\"atze~6, 3, 5]{Claus}.  $D=13$: two perfect classes, both extreme, $\gamma=(84+6\sqrt{91})/35
 =\sqrt{(1476+144\sqrt{91})/175}$ (critical) and $\gamma=4.00045\ldots$ (five minimal classes),
 the forms in rows $2$ and $1$ of the table of \cite[p.~916]{PW05}; the form of row $3$ has
 perfection rank $<5$ there and is correctly absent.  $D=17$: exactly the two extreme forms of
@@ -461,9 +467,14 @@ ramified).
 \end{observation}
 
 Known bounds.  Upper: $\gK<d/2$ (Cohn, as quoted in \cite{PW05,PW09}; see
-\cite{Cohn1,Cohn2}) and $\gK\le16d/\pi^2$ (\cite[Thm.~1]{Icaza}, $n=2$, $r=2$, $s=0$).  Lower:
+\cite{Cohn1,Cohn2}; the non-strict form is the case $m=n=2$ of
+$\gamma_{K,n}\le m^{-m}\gamma_{mn}^{\,m}|d_K|$ \cite[Thm.~4.1, Rem.~4.2]{BI04}, with $\gamma_4^2=2$) and $\gK\le16d/\pi^2$ (\cite[Thm.~1]{Icaza}, $n=2$, $r=2$, $s=0$).  Lower:
 $\gK\ge B(K)$, the least norm of a nontrivial integral ideal, whenever Lenstra's constant
-satisfies $L(K)<4$ \cite[Prop.~4.1]{CIO}; for quadratic $K$, $B(K)\le4$.  A lower bound
+satisfies $L(K)<4$ \cite[Prop.~4.1]{CIO}; for quadratic $K$, $B(K)\le4$.  For $h_K>1$:
+$\gK\ge N(I)N(J)$ for ideals $I$, $J$ of least norm in mutually inverse non-principal classes
+(proof of \cite[Cor.~3.2]{BI04}, stated there as $\gK\ge2\mathcal N(K)$); since $I^\sigma$ lies in the
+inverse class, $N(J)=N(I)$, so $\gK\ge\mathcal N(K)^2$ with $\mathcal N(K)$ the largest least norm of
+an ideal class.  A lower bound
 linear in $\sqrt{d_K}$ is attributed to a preprint of Baeza in \cite[p.~21]{Icaza}
 (not seen).  The strongest is the Minkowski--Hlawka-type bound of Thunder
 \cite[Thm.~2]{Thunder}: with $n=2$, $d=1$ (his notation), $r=2$, $s=0$, $w=2$ it reads
@@ -505,7 +516,10 @@ formula: the hyperbolic volume of $\PSL_2(\OK)\backslash\Hb^2$ is $2\pi^{-2}d_K^
 All these bounds hold in the data.  $\gK$ divided by \eqref{eq:thunder} lies in $[1.46,14.5]$
 (minimum at $D=5$, then $D=2$, $17$); for $h_K>1$, where \eqref{eq:thunder} is not a theorem
 for $\gK$, the ratio is $\ge4.35$, and even without the factor $1/h_K$ it is $\ge2.17$.  $\gK/B(K)\ge1.053$ for $D\ne5$ (nearly attained at $D=2$).
-$\gK/(d/2)\le0.72$ and $\gK/(16d/\pi^2)\le0.22$.  The ratio to \eqref{eq:thunder} grows with $d$
+$\gK/(d/2)\le0.72$ and $\gK/(16d/\pi^2)\le0.22$.  For the $87$ fields with $h_K>1$,
+$\gK/\mathcal N(K)^2\ge2.18$ (minimum at $D=10$; $\mathcal N(K)$ ranges up to $10$), so the bound
+of \cite{BI04} is within a factor of about $2$ of the truth across the range, much closer than
+\eqref{eq:thunder} for large $d$.  The ratio to \eqref{eq:thunder} grows with $d$
 (log-log slope of $\gK$ against $\zeta_K(-1)/(\sqrt d\Reg)$: $1.27$).
 \end{observation}
 
@@ -559,6 +573,21 @@ automorphisms carry the structure of hermitian forms over CM extensions $L/K$
 from $L$ \CONJ.  Binary hermitian forms over an imaginary quadratic field are the case $K=\Q$
 of this picture; their (projective) Hermite constants are tabulated in \cite[Table~1]{CIL}, and
 the relative version over $L/K$ is what a proof of the conjecture would need.
+
+Elliptic points.  Since forms modulo scaling are the points of $\Hb^2$, a perfect class with
+$|\Aut|>1$ is a perfect point fixed by an elliptic element.  For $g$ as in
+Proposition~\ref{prop:cm}, $t$ is a unit ($t^2=\det g$), so $g/t\in\SL_2(\OK)$ has trace $1$ and
+order $3$ in $\PSL_2(\OK)$: every class with $3\mid|\Aut|$ is an elliptic point of order $3$ of
+the Hilbert modular group.  Ong asked, in the additive setting, whether the elliptic fixed points
+correspond to perfect forms \cite{Ong}.  Here the answer is mostly no \CERT: for the $71$ fields
+with $(D,6)=1$, $D\ge7$, Prestel's formula ($a_3=h(-3D)$ or $h(-12D)$ for $D\equiv1$ or $3\bmod4$,
+as quoted in \cite[p.~198]{Hirzebruch}) gives $822$ classes of elliptic points of order $3$ in total,
+and only $22$ perfect classes have $3\mid|\Aut|$ (at most $4\cdot22=88$ of the $822$ classes, since a
+$\GL_2(\OK)$-orbit splits into at most $|\OK^\times/\OK^{\times2}|=4$ orbits of $\PSL_2(\OK)$).
+For $\Q(\sqrt3)$ the lowest point is an elliptic fixed point of order $12$ \cite[Satz~3]{Claus}
+(stabiliser of order $24$ in $\GL_2(\OK)/\OK^\times$ here), but lowest points need not be elliptic:
+for $\Q(\sqrt2)$ Claus notes that his two lowest points modulo the Hilbert modular group are not
+elliptic fixed points \cite[\S4]{Claus}.
 
 \subsection{Eutaxy}
 The median fraction of extreme classes per field is $0.33$, against $0.97$ for perfect unary
@@ -616,30 +645,36 @@ a covering argument as in Proposition~\ref{thm:lower}.
 \item Explain $\gK\approx 0.18\,d^{1.17}\Reg^{-0.61}$; prove \eqref{eq:thunder} for $\gK$ when $h_K>1$, and without the factor $1/h_K$.
 \item Classify the symmetric forms by CM extensions $L/K$ (which $L$, which orders, which
 ideal classes) and compute their $\gamma$ from norms in $L$.
+\item The set $W\subset\Hb^2$ of points with at least two minimal classes has dimension $3$, the
+virtual cohomological dimension of $\PSL_2(\OK)$ (Borel--Serre, as recalled in \cite[\S1]{Ash});
+the perfect points are its $0$-dimensional strata (Lemma~\ref{lem:rank}).  Is $W$ a
+$\GL_2(\OK)$-equivariant deformation retract of $\Hb^2$, as Ash's retract is for the linear
+(Koecher) cones \cite{Ash}?  If so, the perfect classes found here are the vertices of a finite cell
+complex for the cohomology of the Hilbert modular group.
 \item Compare the multiplicative and additive extreme forms field by field: \texttt{perfect\_forms}
 finds $\gamma_{\mathrm{add}}^4/(16\gamma_{\mathrm{mult}}^2)\in[1.56,46.1]$, never $1$.
 \end{enumerate}
 
 \section{Literature}\label{sec:lit}
 \emph{Read for this version} (provided by the project owner):
-\cite{PW05,PW09,CIO,Icaza,Thunder,BI97,CIL,Hirzebruch}.  They fix the novelty statement
+\cite{PW05,PW09,CIO,Icaza,Thunder,BI97,BI04,CIL,Hirzebruch,Claus,Ong,Ash}.  They fix the novelty statement
 (\S\ref{subsec:new}), the validation (\S\ref{subsec:validation}), the known bounds, the
 attribution of the lower bound to Thunder and its restriction to $h_K=1$ (\S\ref{subsec:gamma},
 via \cite[\S5]{CIL}), the role of non-unimodular minimal vectors for $h_K>1$ and the Mordell
-inequality for the ternary step \cite{BI97}, and the volume and $\zeta_K(-1)$ formulas
-\cite{Hirzebruch}.
+inequality for the ternary step \cite{BI97}, the lower bound for $h_K>1$ and the source of the
+$d/2$ bound \cite{BI04}, the volume, $\zeta_K(-1)$ and elliptic-point formulas \cite{Hirzebruch},
+the exact lowest points for $D=2,3,5$ \cite{Claus}, and the additive results kept apart from ours
+\cite{Ong,Ash}.
 \emph{Still wanted} (cited above only as reported by others):
 \begin{enumerate}[leftmargin=*]
 \item R.~Baeza, \emph{The volume of the space of Humbert reduced forms}, preprint, Universidad de
 Chile, 1994 (cited in \cite{Icaza} for a lower bound linear in $\sqrt{d_K}$ and in \cite{BI97}
 for a lower bound by zeta values) --- the closest relative of Proposition~\ref{thm:lower}.
 \item S.~Ohno and T.~Watanabe \cite{OW} (bounds for $\gamma_{K,n}$, used in \cite{CIO}).
-\item R.~Baeza and M.~I.~Icaza \cite{BI04} (unimodularity of minimal vectors; explicit
-$M_{n,K}$, which would make the ternary bound above usable for $h_K>1$).
+\item Bounds for $M_{3,K}$: \cite{BI04} estimates only $M_{K,2}$ ($4\mathcal N(K)^2\le M_{K,2}$), and
+the ternary Mordell bound above needs $M_{3,K}$ for $h_K>1$.
 \item M.~Wagner's thesis and the table cited in \cite{PW09}; any later enumeration of
 multiplicative perfect forms.
-\item G.~Claus \cite{Claus} (lowest points of three Hilbert modular groups); H.~E.~Ong \cite{Ong} and
-A.~Ash \cite{Ash} (a different notion of perfection over real quadratic fields, \cite[p.~937]{PW09}).
 \item G.~van der Geer's book on Hilbert modular surfaces (cusps, elliptic points, and the
 orbifold structure needed to turn the volume heuristic of \S\ref{subsec:volume} into a proof);
 Siegel's original papers as cited in \cite{Hirzebruch}.

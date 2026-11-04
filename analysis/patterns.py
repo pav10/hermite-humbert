@@ -14,9 +14,14 @@ import os
 from collections import Counter
 from fractions import Fraction
 
+import sys
+
 import numpy as np
 
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
+sys.path.insert(0, os.path.join(ROOT, "src"))
+from hermite_humbert.field import RealQuadraticField      # noqa: E402
+from hermite_humbert.ideals import class_group_charts    # noqa: E402
 
 
 def sigma1(n):
@@ -32,6 +37,20 @@ def zeta_m1(d):
     r = math.isqrt(d)
     return Fraction(sum(sigma1((d - b * b) // 4) for b in range(-r, r + 1)
                         if (b - d) % 2 == 0 and b * b < d), 60)
+
+
+def h_imag(D):
+    """class number of the imaginary quadratic discriminant D < 0 (reduced primitive forms)"""
+    D, n, a = -D, 0, 1
+    while 3 * a * a <= D:
+        for b in range(-a + 1, a + 1):
+            if (b * b + D) % (4 * a):
+                continue
+            c = (b * b + D) // (4 * a)
+            if c >= a and not (c == a and b < 0) and math.gcd(math.gcd(a, abs(b)), c) == 1:
+                n += 1
+        a += 1
+    return n
 
 
 def unit(s):
@@ -120,6 +139,10 @@ def main():
     m5 = np.array(Ds) != 5
     print("  gamma >= B(K) [Coulangeon-Icaza-O'Ryan 2007, Prop. 4.1 when L(K) < 4]: min gamma/B(K), D != 5: %.3f (D=%d)"
           % ((g / Bk)[m5].min(), np.array(Ds)[m5][int(np.argmin((g / Bk)[m5]))]))
+    NK = {D: max(c.c.norm() for c in class_group_charts(RealQuadraticField(D))[0]) for D in Ds if T[D]["h_K"] != "1"}
+    r = sorted((float(T[D]["gamma"]) / float(NK[D]) ** 2, D) for D in NK)
+    print("  gamma >= N(I)N(J) = N(K)^2 for h > 1 [Baeza-Icaza 2004, proof of Cor. 3.2]: %d fields, min gamma/N(K)^2 %.3f (D=%d),"
+          " N(K) up to %d" % (len(r), r[0][0], r[0][1], max(NK.values())))
     print("  upper bounds: max gamma/(d/2) = %.3f [Cohn], max gamma/(16 d/pi^2) = %.3f [Icaza 1997, Thm 1]"
           % ((g / (d / 2)).max(), (g / (16 * d / math.pi ** 2)).max()))
     print("  gamma/d: min %.4f (D=%d)  max %.4f (D=%d); Cohn: gamma <= d/2"
@@ -151,6 +174,16 @@ def main():
             else:
                 bad += 1
         print("  |Aut| in %s: %d classes with %s*gamma = %s (integer), %d others" % (orders, ok, scale, lab, bad))
+
+    n3 = a3 = nf = 0
+    for D in Ds:                                    # Prestel, as quoted in Hirzebruch 1973, p. 198: order-3 elliptic points of PSL_2(O_K)
+        if D < 7 or math.gcd(D, 6) != 1:
+            continue
+        nf += 1
+        a3 += h_imag(-3 * D) if D % 4 == 1 else h_imag(-12 * D)
+        n3 += sum(1 for c in P[D]["classes"] if c["aut"] % 3 == 0)
+    print("  elliptic points of order 3, %d fields with (D,6)=1, D>=7: %d perfect classes with 3 | |Aut|, Prestel's a_3 sum %d"
+          % (nf, n3, a3))
 
     print("\n== search statistics")
     st = [s for D in Ds for s in P[D]["stats"]]

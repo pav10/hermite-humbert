@@ -21,6 +21,7 @@ zeta_K(-1) check: ['1/30', '1/12', '1/6', '1/6'] (1/30, 1/12, 1/6, 1/6)
   log gamma ~ d, h Reg   coefficients [ 1.206 -0.423 -2.014]  R2 0.942
   lower bound zeta_K(2) d/(pi^2 h Reg) [Thunder]: gamma/bound min 1.463 (D=5); h > 1: min 4.348; without 1/h, h > 1: min 2.174
   gamma >= B(K) [Coulangeon-Icaza-O'Ryan 2007, Prop. 4.1 when L(K) < 4]: min gamma/B(K), D != 5: 1.053 (D=2)
+  gamma >= N(I)N(J) = N(K)^2 for h > 1 [Baeza-Icaza 2004, proof of Cor. 3.2]: 87 fields, min gamma/N(K)^2 2.177 (D=10), N(K) up to 10
   upper bounds: max gamma/(d/2) = 0.716 [Cohn], max gamma/(16 d/pi^2) = 0.221 [Icaza 1997, Thm 1]
   gamma/d: min 0.0679 (D=46)  max 0.3578 (D=5); Cohn: gamma <= d/2
   residual of (d, Reg) fit, 2 split (D=1 mod 8)  n= 21  mean -0.041
@@ -33,6 +34,7 @@ zeta_K(-1) check: ['1/30', '1/12', '1/6', '1/6'] (1/30, 1/12, 1/6, 1/6)
   copies found per class: mean 3.12, found once 0.072
   |Aut| in (3, 6, 24): 45 classes with 3/4*gamma = a^2+ab+b^2 (integer), 0 others
   |Aut| in (4,): 51 classes with 1*gamma = a^2+b^2 (integer), 13 others
+  elliptic points of order 3, 71 fields with (D,6)=1, D>=7: 22 perfect classes with 3 | |Aut|, Prestel's a_3 sum 822
 
 == search statistics
   boxes 7.17e+08, leaves 5.32e+07, Newton runs 1.47e+09, polished vertices 1.73e+05

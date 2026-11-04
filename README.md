@@ -428,6 +428,12 @@ process).
 | 285 | 122 / 61 | 287 | 1134 / 358 | 290 | 1125 / 289 | 291 | 1427 / 398 | 293 | 109 / 39 | 298 | 1431 / 349 |
 | 299 | 1223 / 304 |  |  |  |  |  |  |  |  |  |  |
 
+Write-up: `paper/perfect-binary-humbert.tex` (and `.pdf`): the algorithm with a completeness proof
+under one stated numerical hypothesis, the patterns (volume law, γ against d and the regulator, a
+lower bound for γ, symmetric forms and CM extensions), next steps and the literature still to check.
+`analysis/patterns.py` reproduces every number in it (output: `results/perfect/patterns.txt`);
+`results/perfect/robustness.txt` is the re-run of D ≤ 77 at half the box size.
+
 ## Files
 
 Package `src/hermite_humbert/`:

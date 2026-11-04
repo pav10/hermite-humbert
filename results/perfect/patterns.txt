@@ -1,0 +1,37 @@
+== totals
+fields 157, perfect 55444, extreme 15313, weakly eutactic 80 (in 52 fields), not eutactic 40051
+gamma_max = certified gamma in all fields: True
+single perfect class: [2, 3, 5] ; most: (1467, 274)
+extreme/perfect: median 0.332
+zeta_K(-1) check: ['1/30', '1/12', '1/6', '1/6'] (1/30, 1/12, 1/6, 1/6)
+
+== counts against field invariants (log-log least squares, d >= 100: 127 fields)
+  n_perfect ~ zeta_K(-1)      slope 1.017 R2 0.984   n_extreme slope 0.823 R2 0.941
+  n_perfect ~ zeta_K(-1) Reg  slope 0.807 R2 0.892   n_extreme slope 0.659 R2 0.868
+  n_perfect ~ d               slope 1.525 R2 0.973   n_extreme slope 1.238 R2 0.936
+  n_perfect ~ Reg             slope 0.891 R2 0.123   n_extreme slope 0.775 R2 0.135
+  n_perfect ~ h Reg           slope 1.604 R2 0.538   n_extreme slope 1.287 R2 0.506
+  n/zeta_K(-1), d > 200 (98 fields): min 5.96  quartiles 7.37 7.90 8.56  max 10.86
+  mass sum 1/|Aut| / zeta_K(-1), d > 200: median 7.74 range [5.66, 10.49]
+
+== gamma_{K,2}
+  log gamma ~ d          coefficients [ 0.98  -1.644]  R2 0.923
+  log gamma ~ d, Reg     coefficients [ 1.172 -0.614 -1.711]  R2 0.977
+  log gamma ~ d, Reg, h  coefficients [ 1.192 -0.643 -0.053 -1.754]  R2 0.977
+  log gamma ~ d, h Reg   coefficients [ 1.206 -0.423 -2.014]  R2 0.942
+  gamma/d: min 0.0679 (D=46)  max 0.3578 (D=5); Cohn: gamma <= d/2
+  residual of (d, Reg) fit, 2 split (D=1 mod 8)  n= 21  mean -0.041
+  residual of (d, Reg) fit, 2 inert (D=5 mod 8)  n= 31  mean -0.029
+  residual of (d, Reg) fit, 2 ramified           n=105  mean +0.017
+
+== classes
+  #minimal classes: [(5, 44643), (6, 8472), (7, 1076), (8, 1081), (9, 42), (10, 74), (12, 53), (18, 1), (20, 1), (24, 1)]
+  |Aut|: [(1, 53228), (2, 2106), (3, 4), (4, 64), (6, 40), (10, 1), (24, 1)]
+  copies found per class: mean 3.12, found once 0.072
+  |Aut| in (3, 6, 24): 45 classes with 3/4*gamma = a^2+ab+b^2 (integer), 0 others
+  |Aut| in (4,): 51 classes with 1*gamma = a^2+b^2 (integer), 13 others
+
+== search statistics
+  boxes 7.17e+08, leaves 5.32e+07, Newton runs 1.47e+09, polished vertices 1.73e+05
+  boxes ~ zeta_K(-1)^1.02 (R2 0.91)
+  longest field: 11501s (D = 263)

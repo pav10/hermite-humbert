@@ -8,6 +8,8 @@ T = {r["D"]: r for r in csv.DictReader(open(os.path.join(ROOT, "results/gamma_K2
 k = 3
 out = [r"\begin{small}", r"\begin{longtable}{" + "|".join(["rrrrr"] * k) + "}",
        r"\caption{Per field: $D$, $h_K$, $\gK$ (rounded), number of perfect and of extreme classes \CERT.}\label{tab:all}\\",
+       r"\toprule", " & ".join([r"$D$ & $h$ & $\gK$ & perf & ext"] * k) + r"\\", r"\midrule", r"\endfirsthead",
+       r"\caption[]{(continued)}\\",
        r"\toprule", " & ".join([r"$D$ & $h$ & $\gK$ & perf & ext"] * k) + r"\\", r"\midrule", r"\endhead"]
 cells = ["%s & %s & %.4g & %s & %s" % (r["D"], r["h_K"], float(T[r["D"]]["gamma"]), r["n_perfect"], r["n_extreme"]) for r in S]
 rows = (len(cells) + k - 1) // k

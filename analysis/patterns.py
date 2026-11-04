@@ -3,7 +3,7 @@ normalisation) and in the certified gamma_{K,2} of results/gamma_K2.tsv.
 
     python analysis/patterns.py            # prints every number quoted in paper/
 
-Read-only on the result files.  zeta_K(-1) by Siegel's formula
+Read-only on the result files.  zeta_K(-1) by Siegel's formula (Hirzebruch, Enseign. Math. 1973, section 1.4)
 zeta_K(-1) = (1/60) sum_{b^2 < d, b = d mod 2} sigma_1((d - b^2)/4), d = disc(K).
 """
 import csv

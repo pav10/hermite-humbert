@@ -28,6 +28,8 @@ python -m hermite_humbert 13                  # same, without the console script
 hermite-humbert-sweep out.tsv 2-100 -j 4      # parallel batch run over all squarefree D in [2, 100]
 hermite-humbert-sweep out.tsv 46 91 --timeout 0   # no time limit; re-running resumes
 
+hermite-humbert-perfect 10 13 --out perf/ -j 2    # all perfect / extreme classes (see below)
+
 pytest -m "not slow"                          # unit tests (~2 min)
 pytest                                        # + full pipeline on the published fields
 ```
@@ -356,14 +358,16 @@ Package `src/hermite_humbert/`:
 | `analysis.py` | equivalence ([PW05, Alg. 11]), normal forms, PSLQ identification, local ball certificate |
 | `core.py` | driver / CLI (`hermite-humbert`), `compute`, `gamma_of_form`, `chart_point` |
 | `sweep.py` | parallel, resumable batch runs (`hermite-humbert-sweep`) |
+| `perfect.py` | all perfect / extreme classes by box enumeration (`hermite-humbert-perfect`) |
+| `voronoi.py` | experimental Voronoi neighbour walk; automorphism groups |
 | `features.py` | feature extraction for the critical forms (patterns) |
 
 Elsewhere:
 
 | path | contents |
 |---|---|
-| `tests/test_hermite_humbert.py` | 17 pytest tests (incl. soundness of rule 4 and its interval re-check): PARI cross-checks (units, class numbers), enumeration vs brute force, published forms, exactness of V, invariance, chart covering in both directions, pipeline vs published values (40 digits), h = 2 regression, verifier soundness |
-| `results/` | result tables, per-field JSON (`results/fields/`), `features.jsonl` |
+| `tests/test_hermite_humbert.py` | 27 pytest tests (incl. soundness of rule 4 and its interval re-check): PARI cross-checks (units, class numbers), enumeration vs brute force, published forms, exactness of V, invariance, chart covering in both directions, pipeline vs published values (40 digits), h = 2 regression, verifier soundness, perfect forms vs the literature, short vectors for large units |
+| `results/` | result tables, per-field JSON (`results/fields/`), `features.jsonl`, perfect forms (`results/perfect/`) |
 | `.github/workflows/tests.yml` | CI: unit tests on Python 3.9 and 3.12, pipeline tests on 3.12 |
 
 ## Extensions (not implemented)

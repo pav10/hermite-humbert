@@ -108,6 +108,31 @@ def test_fincke_pohst_bruteforce():
         assert bf == {x for x in fp if max(map(abs, x)) <= R}
 
 
+def test_fincke_pohst_with_basis():
+    # the basis path (G = B^T B, LLL on B) agrees with the Gram path when G is
+    # well conditioned
+    rng = np.random.default_rng(2)
+    for _ in range(20):
+        Bm = rng.normal(size=(4, 4)) + 0.3 * np.eye(4)
+        G = Bm.T @ Bm
+        bound = float(rng.uniform(0.5, 4)) * np.min(np.diag(G))
+        assert fincke_pohst(G, bound, B=Bm) == fincke_pohst(G, bound)
+
+
+def test_short_vectors_large_unit():
+    # eps0 ~ 4.6e5: the Z^4-forms of short_vectors are very ill-conditioned; the
+    # Gram-matrix Cholesky failed (or lost vectors) at many points of the region
+    P = HumbertProblem(103)
+    rng = np.random.default_rng(1)
+    for _ in range(30):
+        t = rng.uniform(0.5 * math.log(2 / P.d), 0.0)
+        s = rng.uniform(0, 0.5 * math.log(P.eps))
+        p = np.array([rng.random(), rng.random(), math.exp(t - s), math.exp(t + s)])
+        m, M = P.minimum(p)
+        assert M and m <= 1.0 / (p[2] * p[3]) * (1 + 1e-9)
+        assert all(abs(P.f_exact_list(p, [v])[0] - m) <= 1e-9 * m for v in M)
+
+
 def test_minimum_at_published_forms():
     t, tp = (1 + 5 ** .5) / 2, (1 - 5 ** .5) / 2
     g, vs, _ = gamma_of_form(5, [[1, -t / 2], [-t / 2, 1]], [[1, -tp / 2], [-tp / 2, 1]])

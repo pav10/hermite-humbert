@@ -140,35 +140,69 @@ class PerfectSearch:
         rng = np.random.default_rng(len(self.found) + self.stats["leaves"])
         for _ in range(3):
             starts.append(self._q(lo + rng.random(4) * (hi - lo)))
-        for four in itertools.combinations(others, 4):
-            idx = np.array(four)
-            for q0 in starts:
-                q = self._newton(q0, idx)
-                if q is None:
-                    continue
-                # inside the box (with a small margin, neighbours share boundaries)
-                span = qbox_hi - qbox_lo
-                if np.any(q < qbox_lo - 0.01 * span) or np.any(q > qbox_hi + 0.01 * span):
-                    continue
-                self.vertex(q, list(four))
-                break
+        span = qbox_hi - qbox_lo
+        fours = np.array(list(itertools.combinations(others, 4)))
+        S = len(starts)
+        for c0 in range(0, len(fours), self.chunk):
+            fc = fours[c0:c0 + self.chunk]
+            # every (4-subset, start) pair at once; for each subset the first start whose
+            # Newton limit lies in the box (with a small margin, neighbours share
+            # boundaries) gives the vertex candidate
+            q, ok = self._newton_batch(np.tile(np.array(starts), (len(fc), 1)), np.repeat(fc, S, axis=0))
+            ok &= np.all(q >= qbox_lo - 0.01 * span, axis=1) & np.all(q <= qbox_hi + 0.01 * span, axis=1)
+            ok = ok.reshape(len(fc), S)
+            for k in np.where(ok.any(axis=1))[0]:
+                self.vertex(q[k * S + np.argmax(ok[k])], list(fc[k]))
 
-    def _newton(self, q, idx):
-        self.stats["newton"] += 1
+    def _newton_batch(self, q, idx):
+        """Damped Newton for N_v = 1 (v in idx[k]) from q[k], for all k at once; returns
+        the limits and a mask of the runs that converged (|log N_v| < 1e-13 within 40
+        steps, no singular Jacobian or overflow)."""
+        bb = self.bb
+        self.stats["newton"] += len(q)
         q = q.copy()
-        for _ in range(40):
-            try:
-                val, g = self._logN(q, idx)
-                dq = np.linalg.solve(g, -val)
-            except (np.linalg.LinAlgError, OverflowError, FloatingPointError):
-                return None
-            n = math.sqrt((dq[0] / math.exp(q[2])) ** 2 + (dq[1] / math.exp(q[3])) ** 2 + dq[2] ** 2 + dq[3] ** 2)
-            if n > 0.5:
-                dq *= 0.5 / n
-            q = q + dq
-            if np.max(np.abs(val)) < 1e-13:
-                return q
-        return None
+        A1, B1, A2, B2 = bb.A1[idx], bb.B1[idx], bb.A2[idx], bb.B2[idx]
+        live = np.ones(len(q), bool)
+        done = np.zeros(len(q), bool)
+        with np.errstate(all="ignore"):
+            for _ in range(40):
+                r = np.where(live)[0]
+                if not len(r):
+                    break
+                qr = q[r]
+                y1, y2 = np.exp(qr[:, 2:3]), np.exp(qr[:, 3:4])
+                L1, L2 = A1[r] + B1[r] * qr[:, 0:1], A2[r] + B2[r] * qr[:, 1:2]
+                T1, T2 = (B1[r] * y1) ** 2, (B2[r] * y2) ** 2
+                Q1, Q2 = L1 * L1 + T1, L2 * L2 + T2
+                val = np.log(Q1) + np.log(Q2)
+                g = np.stack([2 * B1[r] * L1 / Q1, 2 * B2[r] * L2 / Q2, 2 * T1 / Q1, 2 * T2 / Q2], axis=2)
+                good = np.isfinite(val).all(axis=1) & np.isfinite(g).all(axis=(1, 2)) & np.isfinite(y1[:, 0]) & np.isfinite(y2[:, 0])
+                good[good] = np.linalg.det(g[good]) != 0
+                live[r[~good]] = False
+                r, val, g, qr = r[good], val[good], g[good], qr[good]
+                if not len(r):
+                    break
+                try:
+                    dq = np.linalg.solve(g, -val[:, :, None])[:, :, 0]
+                except np.linalg.LinAlgError:
+                    dq = np.full_like(qr, np.nan)
+                    for j in range(len(r)):
+                        try:
+                            dq[j] = np.linalg.solve(g[j], -val[j])
+                        except np.linalg.LinAlgError:
+                            pass
+                fin = np.isfinite(dq).all(axis=1)
+                live[r[~fin]] = False
+                r, val, dq, qr = r[fin], val[fin], dq[fin], qr[fin]
+                n = np.sqrt((dq[:, 0] / np.exp(qr[:, 2])) ** 2 + (dq[:, 1] / np.exp(qr[:, 3])) ** 2
+                            + dq[:, 2] ** 2 + dq[:, 3] ** 2)
+                big = n > 0.5
+                dq[big] *= (0.5 / n[big])[:, None]
+                q[r] = qr + dq
+                conv = np.max(np.abs(val), axis=1) < 1e-13
+                done[r[conv]] = True
+                live[r[conv]] = False
+        return q, done
 
     def vertex(self, q, four):
         """Polish at dps digits, full minimal set, perfection and eutaxy."""
@@ -335,16 +369,23 @@ def main(argv=None):
             D = todo.pop(0)
             cmd = [sys.executable, "-m", "hermite_humbert.perfect", "--child", str(D), str(a.w_min),
                    str(cert[D]) if D in cert else "-"]
-            running.append((subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True),
-                            D, time.time()))
+            # child output goes to files: a pipe read only after exit would block a chatty child
+            log = os.path.join(a.out, "D%d" % D)
+            fo, fe = open(log + ".out", "w"), open(log + ".err", "w")
+            running.append((subprocess.Popen(cmd, stdout=fo, stderr=fe, text=True), D, time.time(), log))
+            fo.close()
+            fe.close()
         still = []
-        for p, D, t0 in running:
+        for p, D, t0, log in running:
             if p.poll() is None and time.time() - t0 < a.timeout:
-                still.append((p, D, t0))
+                still.append((p, D, t0, log))
                 continue
             if p.poll() is None:
                 p.kill()
-            out, err = p.communicate()
+            p.wait()
+            out, err = open(log + ".out").read(), open(log + ".err").read()
+            os.remove(log + ".out")
+            os.remove(log + ".err")
             lines = [ln for ln in out.splitlines() if ln.startswith("{")]
             if p.returncode == 0 and lines:
                 rec = json.loads(lines[-1])

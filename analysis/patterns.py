@@ -53,6 +53,27 @@ def h_imag(D):
     return n
 
 
+def kronecker(D, n):
+    """Kronecker symbol (D/n), D a fundamental discriminant, n >= 1"""
+    r = 1
+    while n % 2 == 0:
+        n //= 2
+        if D % 2 == 0:
+            return 0
+        r *= 1 if D % 8 in (1, 7) else -1
+    a = D % n if n > 1 else 0
+    while a:
+        while a % 2 == 0:
+            a //= 2
+            if n % 8 in (3, 5):
+                r = -r
+        a, n = n, a
+        if a % 4 == 3 and n % 4 == 3:
+            r = -r
+        a %= n
+    return r if n == 1 else 0
+
+
 def unit(s):
     """fundamental unit from the closed form of gamma_K2.tsv, e.g. '(1 + sqrt(5))/2'"""
     s = s.replace(" ", "")
@@ -143,6 +164,17 @@ def main():
     r = sorted((float(T[D]["gamma"]) / float(NK[D]) ** 2, D) for D in NK)
     print("  gamma >= N(I)N(J) = N(K)^2 for h > 1 [Baeza-Icaza 2004, proof of Cor. 3.2]: %d fields, min gamma/N(K)^2 %.3f (D=%d),"
           " N(K) up to %d" % (len(r), r[0][0], r[0][1], max(NK.values())))
+    # imaginary quadratic, h = 1: gamma_K^2 >= w zeta_K(2) |D| / (2 pi^2) (cusp volume + Grunewald-Kuehnlein;
+    # Thunder r = 0, s = 1), against the values of Chan-Icaza-Lauret 2015, Table 1
+    cil = {3: 1.5, 4: 2, 7: 7 / 3, 8: 4, 11: 5.5, 19: 9.5, 43: 21.5, 67: 33.5, 163: 81.5}   # gamma_K^2
+    rat = []
+    for a_, g2 in cil.items():
+        Dn = -a_
+        L2 = sum(kronecker(Dn, k) / k ** 2 for k in range(1, 200000))
+        w = {3: 6, 4: 4}.get(a_, 2)
+        rat.append((math.sqrt(g2 / (w * math.pi ** 2 / 6 * L2 * a_ / (2 * math.pi ** 2))), Dn))
+    print("  imaginary quadratic, h = 1 [CIL Table 1]: gamma/volume bound from %.3f (D=%d) to %.3f (D=%d)"
+          % (min(rat) + max(rat)))
     print("  upper bounds: max gamma/(d/2) = %.3f [Cohn], max gamma/(16 d/pi^2) = %.3f [Icaza 1997, Thm 1]"
           % ((g / (d / 2)).max(), (g / (16 * d / math.pi ** 2)).max()))
     print("  gamma/d: min %.4f (D=%d)  max %.4f (D=%d); Cohn: gamma <= d/2"

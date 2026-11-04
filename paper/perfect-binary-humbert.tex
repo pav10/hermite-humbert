@@ -512,7 +512,21 @@ formula: the hyperbolic volume of $\PSL_2(\OK)\backslash\Hb^2$ is $2\pi^{-2}d_K^
 =8\pi^2\zeta_K(-1)$, \cite[\S1.3]{Hirzebruch}).
 \end{proof}
 
-\begin{observation}[\CERT, $157$ fields]
+\begin{remark}[imaginary quadratic fields]
+The same covering argument works for binary hermitian forms over an imaginary quadratic field
+$K$ with $h_K=1$, in the normalisation of \cite{CIL}.  A form corresponds to a point $(x,r)$ of
+$\Hb^3$ with $S[e_1]/\sqrt{\det S}=1/r$ at a highest point; the highest points lie over a
+fundamental domain of $\Gamma_\infty$ in $\mathbb C$, of area $\sqrt{|d_K|}/(2w')$ with
+$w'=|\OK^\times|/2$, and $\int_{1/\gamma}^\infty dr/r^3=\gamma^2/2$.  With Humbert's formula
+$\mathrm{vol}(\PSL_2(\OK)\backslash\Hb^3)=|d_K|^{3/2}\zeta_K(2)/(4\pi^2)$, whose proof was completed by
+Grunewald and K\"uhnlein \cite{GK}, this gives
+$\gamma_K^2\ge w_K\zeta_K(2)|d_K|/(2\pi^2)$, which is Thunder's bound \cite[Thm.~2]{Thunder} with $r=0$,
+$s=1$, $h_K=1$.  Against the exact values for the nine fields with $h_K=1$ \cite[Table~1]{CIL} the
+ratio $\gamma_K/\text{bound}$ grows from $1.13$ ($d_K=-3$) to $2.13$ ($d_K=-163$) \CERT, much as
+in Observation~\ref{obs:bounds} for real quadratic fields.
+\end{remark}
+
+\begin{observation}[\CERT, $157$ fields]\label{obs:bounds}
 All these bounds hold in the data.  $\gK$ divided by \eqref{eq:thunder} lies in $[1.46,14.5]$
 (minimum at $D=5$, then $D=2$, $17$); for $h_K>1$, where \eqref{eq:thunder} is not a theorem
 for $\gK$, the ratio is $\ge4.35$, and even without the factor $1/h_K$ it is $\ge2.17$.  $\gK/B(K)\ge1.053$ for $D\ne5$ (nearly attained at $D=2$).
@@ -657,13 +671,14 @@ finds $\gamma_{\mathrm{add}}^4/(16\gamma_{\mathrm{mult}}^2)\in[1.56,46.1]$, neve
 
 \section{Literature}\label{sec:lit}
 \emph{Read for this version} (provided by the project owner):
-\cite{PW05,PW09,CIO,Icaza,Thunder,BI97,BI04,CIL,Hirzebruch,Claus,Ong,Ash}.  They fix the novelty statement
+\cite{PW05,PW09,CIO,Icaza,Thunder,BI97,BI04,CIL,Hirzebruch,Claus,Ong,Ash,GK}.  They fix the novelty statement
 (\S\ref{subsec:new}), the validation (\S\ref{subsec:validation}), the known bounds, the
 attribution of the lower bound to Thunder and its restriction to $h_K=1$ (\S\ref{subsec:gamma},
 via \cite[\S5]{CIL}), the role of non-unimodular minimal vectors for $h_K>1$ and the Mordell
 inequality for the ternary step \cite{BI97}, the lower bound for $h_K>1$ and the source of the
 $d/2$ bound \cite{BI04}, the volume, $\zeta_K(-1)$ and elliptic-point formulas \cite{Hirzebruch},
-the exact lowest points for $D=2,3,5$ \cite{Claus}, and the additive results kept apart from ours
+the exact lowest points for $D=2,3,5$ \cite{Claus}, the imaginary quadratic volume
+formula \cite{GK}, and the additive results kept apart from ours
 \cite{Ong,Ash}.
 \emph{Still wanted} (cited above only as reported by others):
 \begin{enumerate}[leftmargin=*]
@@ -725,6 +740,10 @@ Pure Math. \textbf{8} (1965), 190--202.
 \bibitem{CIO}
 R.~Coulangeon, M.~I.~Icaza and M.~O'Ryan, \emph{Lenstra's constant and extreme forms in number
 fields}, Experiment. Math. \textbf{16} (2007), 455--462.
+
+\bibitem{GK}
+F.~Grunewald and S.~K\"uhnlein, \emph{On the proof of Humbert's volume formula}, Manuscripta Math.
+\textbf{95} (1998), 431--436.
 
 \bibitem{Hirzebruch}
 F.~Hirzebruch, \emph{Hilbert modular surfaces}, Enseign. Math. (2) \textbf{19} (1973), 183--281.

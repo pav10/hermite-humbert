@@ -344,6 +344,90 @@ and a further extreme form has γ ≈ 7.93430.  Seven of the 21 values above are
 members D = 3, 6, 11, 38, 83, 227 all have rational γ.  `features.py` extracts
 structural features of the critical forms; `results/features.jsonl` has them for D < 100.)
 
+## Perfect and extreme forms (all classes)
+
+`hermite-humbert-perfect` (`perfect.py`) lists, for each field, all classes of perfect
+binary Humbert forms (multiplicative normalisation, Coulangeon's perfection: the minimal
+classes span a rank-5 space of the 6-dimensional form space) up to GL₂(O_K) and scaling,
+and decides eutaxy for each (extreme = perfect + eutactic, Voronoi–Coulangeon).
+One subprocess per field; `results/perfect/D<D>.json` has every class (γ, closed form when
+PSLQ finds one, number of minimal classes, perfection rank, eutaxy and its coefficients,
+order of the automorphism group, a point and the minimal vectors in O_K²) and
+`results/perfect/summary.tsv` the counts.
+
+Method (box enumeration, not a neighbour walk).  In each chart the region R where e₁ is
+minimal is subdivided in the box coordinates (x₁, x₂, s, t), t ≤ 0 (a second minimal class
+forces y₁y₂ ≤ 1).  With N_v = f_v / f_{e₁}, a box is discarded if it lies outside the
+translation parallelogram (rule 3), if some v has sup N_v < 1 on it (rule 1: the box is
+outside R), or if fewer than 5 classes v have inf N_v ≤ 1 on it (rule 5: no point of the box
+has 5 minimal classes) — the certified bounds of `certify.py`.  Surviving boxes of hyperbolic
+width ≤ 0.05 are solved: Newton on N_v = 1 for every 4 candidate classes from the centre and
+3 random starts (all subsets and starts of a box as one vectorised iteration), polishing at 50
+digits, the full minimal set from the exact short-vector enumeration (independent of the
+candidate set), perfection and eutaxy by LP; classes up to GL₂(O_K) by [PW05, Alg. 11].
+
+Rigour.  The discarding rules are certified (outward safety margin as in the γ
+certificates); solving the 4 × 4 systems in the remaining boxes is numerical (Newton from 4
+starts), so a missed perfect form would need Newton to fail from all 4 starts inside a box of
+hyperbolic width ≤ 0.05.  Minimal sets, perfection and eutaxy are decided at 50 digits.  The
+list is therefore numerically complete, not certified; the largest γ found agrees with the
+certified γ_{K,2} for every field (column `gamma_max_matches_certified`).
+
+Validation.  D = 2 and 5 (one class each, [BCIO01]; |Aut| = 10 for D = 5), D = 13 (two
+classes, both extreme, γ = (84 + 6√91)/35), D = 10 (7 perfect, 5
+extreme) are in the tests; where the experimental Voronoi neighbour walk (`voronoi.py`)
+completed, it found the same classes.
+
+Two fixes found during the run:
+- `short_vectors` built its LLL basis from a Cholesky factor of an ill-conditioned Gram
+  matrix (the two embeddings' forms balanced by c ≈ ε₀^{±1}); for ε₀ ≳ 5·10⁴ this failed or
+  lost vectors.  LLL now starts from an explicit basis (regression test
+  `test_short_vectors_large_unit`).  This changed one earlier record: D = 46 had a spurious 85th class (the γ = 9.2585… form a second time with one minimal vector
+  missing); the corrected count is 84 perfect, 39 extreme.  The γ certificates do not use
+  this enumeration.
+- a pipe deadlock in the parallel driver (child output now goes to files).
+
+The leaf Newton runs are batched (about 3× faster, identical records on the fields compared).
+
+Results (all 157 certified fields D ≤ 300, `results/perfect/`).  All 157 fields are complete:
+55444 perfect classes, of which 15313 are extreme, 80 weakly eutactic (best eutaxy margin
+0 to within 10⁻⁹: eutactic only with a zero coefficient, so not extreme) and 40051 not eutactic; the largest γ found equals the
+certified γ_{K,2} in every field.  Only D = 2, 3, 5 have a single perfect class; D = 274 has
+the most (1467).  Weakly eutactic classes occur in 52 fields.  Ten fields (D = 134, 178,
+187, 206, 231, 238, 246, 247, 263, 298) needed more than the 2 h limit of the first pass
+and were rerun with a 12 h limit; the longest took 3.2 h (D = 263, 4 CPUs, one field per
+process).
+
+| D | perfect / extreme | D | perfect / extreme | D | perfect / extreme | D | perfect / extreme | D | perfect / extreme | D | perfect / extreme |
+|---:|---|---:|---|---:|---|---:|---|---:|---|---:|---|
+| 2 | 1 / 1 | 3 | 1 / 1 | 5 | 1 / 1 | 6 | 3 / 3 | 7 | 4 / 4 | 10 | 7 / 5 |
+| 11 | 8 / 7 | 13 | 2 / 2 | 14 | 11 / 6 | 15 | 13 / 11 | 17 | 2 / 2 | 19 | 16 / 9 |
+| 21 | 2 / 2 | 22 | 23 / 16 | 23 | 25 / 16 | 26 | 36 / 18 | 29 | 3 / 3 | 30 | 38 / 17 |
+| 31 | 37 / 17 | 33 | 3 / 3 | 34 | 78 / 38 | 35 | 41 / 15 | 37 | 4 / 4 | 38 | 34 / 19 |
+| 39 | 54 / 31 | 41 | 10 / 5 | 42 | 70 / 27 | 43 | 87 / 27 | 46 | 84 / 39 | 47 | 73 / 38 |
+| 51 | 91 / 44 | 53 | 9 / 1 | 55 | 118 / 48 | 57 | 10 / 5 | 58 | 123 / 34 | 59 | 110 / 45 |
+| 61 | 8 / 7 | 62 | 111 / 47 | 65 | 21 / 7 | 66 | 142 / 47 | 67 | 177 / 65 | 69 | 15 / 7 |
+| 70 | 133 / 31 | 71 | 210 / 67 | 73 | 17 / 15 | 74 | 143 / 37 | 77 | 12 / 8 | 78 | 162 / 50 |
+| 79 | 203 / 74 | 82 | 228 / 57 | 83 | 181 / 64 | 85 | 47 / 14 | 86 | 271 / 84 | 87 | 210 / 52 |
+| 89 | 28 / 10 | 91 | 210 / 75 | 93 | 17 / 7 | 95 | 241 / 72 | 97 | 31 / 19 | 101 | 31 / 12 |
+| 102 | 266 / 87 | 103 | 378 / 119 | 105 | 36 / 10 | 106 | 303 / 107 | 107 | 291 / 99 | 109 | 26 / 17 |
+| 110 | 238 / 70 | 111 | 340 / 113 | 113 | 43 / 23 | 114 | 358 / 97 | 115 | 303 / 69 | 118 | 431 / 120 |
+| 119 | 373 / 111 | 122 | 301 / 60 | 123 | 368 / 104 | 129 | 51 / 21 | 130 | 439 / 114 | 131 | 465 / 114 |
+| 133 | 49 / 33 | 134 | 524 / 135 | 137 | 47 / 22 | 138 | 365 / 93 | 141 | 63 / 27 | 142 | 448 / 137 |
+| 143 | 339 / 76 | 145 | 102 / 36 | 146 | 520 / 165 | 149 | 50 / 14 | 154 | 534 / 153 | 155 | 531 / 118 |
+| 157 | 62 / 26 | 158 | 578 / 142 | 159 | 565 / 164 | 161 | 79 / 32 | 165 | 52 / 21 | 167 | 477 / 152 |
+| 170 | 566 / 170 | 173 | 48 / 29 | 174 | 523 / 176 | 177 | 88 / 40 | 178 | 760 / 217 | 181 | 68 / 35 |
+| 182 | 539 / 111 | 183 | 611 / 177 | 185 | 106 / 16 | 186 | 647 / 139 | 187 | 810 / 207 | 190 | 619 / 171 |
+| 194 | 721 / 228 | 195 | 658 / 139 | 197 | 67 / 31 | 202 | 832 / 164 | 203 | 671 / 170 | 205 | 88 / 30 |
+| 206 | 886 / 220 | 209 | 95 / 38 | 210 | 714 / 226 | 213 | 72 / 39 | 215 | 819 / 183 | 218 | 729 / 184 |
+| 219 | 899 / 208 | 221 | 108 / 52 | 222 | 822 / 220 | 223 | 906 / 245 | 226 | 976 / 280 | 227 | 801 / 248 |
+| 229 | 95 / 33 | 230 | 844 / 160 | 231 | 1032 / 263 | 233 | 143 / 54 | 235 | 1037 / 250 | 237 | 98 / 36 |
+| 238 | 1357 / 280 | 246 | 1091 / 363 | 247 | 1181 / 240 | 253 | 129 / 43 | 254 | 1075 / 322 | 255 | 1058 / 257 |
+| 257 | 145 / 47 | 258 | 1074 / 262 | 263 | 1144 / 303 | 265 | 246 / 78 | 266 | 1012 / 250 | 267 | 1124 / 320 |
+| 269 | 126 / 43 | 273 | 267 / 113 | 274 | 1467 / 273 | 277 | 151 / 67 | 278 | 1095 / 296 | 282 | 1157 / 276 |
+| 285 | 122 / 61 | 287 | 1134 / 358 | 290 | 1125 / 289 | 291 | 1427 / 398 | 293 | 109 / 39 | 298 | 1431 / 349 |
+| 299 | 1223 / 304 |  |  |  |  |  |  |  |  |  |  |
+
 ## Files
 
 Package `src/hermite_humbert/`:

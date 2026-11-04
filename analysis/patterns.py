@@ -104,6 +104,24 @@ def main():
     for lab, xs in [("d", (d,)), ("d, Reg", (d, R)), ("d, Reg, h", (d, R, h)), ("d, h Reg", (d, h * R))]:
         c, r2 = fit(g, *xs)
         print("  log gamma ~ %-10s coefficients %s  R2 %.3f" % (lab, np.round(c, 3), r2))
+    zeta2 = 4 * math.pi ** 4 * z / d ** 1.5          # functional equation: zeta_K(-1) = d^{3/2} zeta_K(2) / (4 pi^4)
+    th = g / (zeta2 * d / (math.pi ** 2 * h * R))    # Thunder 1998, Thm 2 (n = 2, d = 1): gamma >= zeta_K(2) d / (pi^2 h Reg)
+    th1 = g / (zeta2 * d / (math.pi ** 2 * R))       # the same without the factor 1/h
+    print("  lower bound zeta_K(2) d/(pi^2 h Reg) [Thunder]: gamma/bound min %.3f (D=%d); h > 1: min %.3f;"
+          " without 1/h, h > 1: min %.3f" % (th.min(), Ds[int(np.argmin(th))], th[h > 1].min(), th1[h > 1].min()))
+
+    def least_ideal_norm(D, dK):                    # B(K): least norm of a nontrivial integral ideal
+        best = 4 if D % 8 == 5 else 2               # 2 inert iff D = 5 mod 8
+        for p in (3, 5, 7):
+            l = pow(D % p, (p - 1) // 2, p) if D % p else 0
+            best = min(best, p if l != p - 1 else p * p)
+        return best
+    Bk = np.array([least_ideal_norm(D, int(T[D]["d_K"])) for D in Ds], float)
+    m5 = np.array(Ds) != 5
+    print("  gamma >= B(K) [Coulangeon-Icaza-O'Ryan 2007, Prop. 4.1 when L(K) < 4]: min gamma/B(K), D != 5: %.3f (D=%d)"
+          % ((g / Bk)[m5].min(), np.array(Ds)[m5][int(np.argmin((g / Bk)[m5]))]))
+    print("  upper bounds: max gamma/(d/2) = %.3f [Cohn], max gamma/(16 d/pi^2) = %.3f [Icaza 1997, Thm 1]"
+          % ((g / (d / 2)).max(), (g / (16 * d / math.pi ** 2)).max()))
     print("  gamma/d: min %.4f (D=%d)  max %.4f (D=%d); Cohn: gamma <= d/2"
           % ((g / d).min(), Ds[int(np.argmin(g / d))], (g / d).max(), Ds[int(np.argmax(g / d))]))
     c, _ = fit(g, d, R)

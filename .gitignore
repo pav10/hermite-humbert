@@ -11,3 +11,7 @@ venv/
 *.tmp
 results/checkpoints/
 results/perfect/run.log
+paper/*.aux
+paper/*.log
+paper/*.out
+paper/*.toc

@@ -1,0 +1,803 @@
+\documentclass[11pt]{amsart}
+\usepackage[a4paper,margin=2.6cm]{geometry}
+\usepackage{amssymb,amsmath,booktabs,longtable,enumitem}
+\usepackage[hidelinks]{hyperref}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{observation}[theorem]{Observation}
+
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Hb}{\mathbb{H}}
+\newcommand{\OK}{\mathcal{O}_K}
+\newcommand{\GL}{\mathrm{GL}}
+\newcommand{\PGL}{\mathrm{PGL}}
+\newcommand{\PSL}{\mathrm{PSL}}
+\newcommand{\SL}{\mathrm{SL}}
+\newcommand{\Reg}{\mathrm{Reg}_K}
+\newcommand{\Aut}{\mathrm{Aut}}
+\newcommand{\gK}{\gamma_{K,2}}
+\newcommand{\nperf}{n_{\mathrm{perf}}}
+\newcommand{\nex}{n_{\mathrm{ext}}}
+\newcommand{\PROVED}{\textsc{[proved]}}
+\newcommand{\CERT}{\textsc{[certified]}}
+\newcommand{\CONJ}{\textsc{[conjecture]}}
+\newcommand{\REFQ}{\textbf{[REF?]}}
+
+\title[Perfect binary Humbert forms, multiplicative normalisation]{Perfect and extreme binary Humbert forms over real quadratic fields
+in the multiplicative normalisation:\\ an enumeration for 157 fields, patterns, and next steps}
+\date{Working notes, November 2026}
+
+\begin{document}
+
+\begin{abstract}
+For every real quadratic field $K=\Q(\sqrt D)$, $D\le 300$ squarefree, whose Hermite--Humbert
+constant $\gK$ (Icaza's multiplicative normalisation) has been certified in this project ---
+157 of the 182 fields --- we list all classes of perfect binary Humbert forms modulo
+$\GL_2(\OK)$ and scaling, and decide eutaxy for each.  There are $55444$ perfect classes, of
+which $15313$ are extreme, $80$ weakly eutactic and $40051$ not eutactic; in every field the
+largest $\gamma$ of a perfect form equals the certified $\gK$.  We describe the enumeration
+(a branch-and-bound over the fundamental region with certified discarding rules, followed by
+a local Newton solve), prove that it is complete under one explicitly stated numerical
+hypothesis, and discuss how to remove that hypothesis.  The data suggest three regularities:
+the number of perfect classes is proportional to $\zeta_K(-1)$, i.e.\ to the volume of the
+Hilbert modular surface, with no regulator factor (in contrast with the additive
+normalisation); $\gK$ is described to within about $20\%$ (residual standard deviation $0.18$ in $\log$) by $d_K^{1.17}\Reg^{-0.61}$, and
+for $h_K=1$ Thunder's lower bound reads $\gK\ge 4\pi^2\zeta_K(-1)/(\sqrt{d_K}\,\Reg)$, for
+which we give an elementary proof; for $h_K>1$ it is not known to bound $\gK$ (it bounds a
+constant that dominates the projective one), but the data satisfy it even without its
+factor $1/h_K$; and forms
+with an automorphism of order $3$ have $\tfrac34\gamma$ equal to a norm from $\Z[\zeta_3]$,
+reflecting a CM structure.  Every claim is labelled \PROVED, \CERT{} (certified or exhaustive
+computation, range stated) or \CONJ.
+\end{abstract}
+
+\maketitle
+\tableofcontents
+
+\section{Introduction}\label{sec:intro}
+
+Let $K=\Q(\sqrt D)$ be a real quadratic field with discriminant $d=d_K$, ring of integers
+$\OK$, fundamental unit $\varepsilon_0>1$, regulator $\Reg=\log\varepsilon_0$ and class number
+$h=h_K$.  A \emph{binary Humbert form} is a pair $S=(S_1,S_2)$ of positive definite real
+$2\times2$ matrices, $S_j$ attached to the real embedding $x\mapsto x^{(j)}$.  Following
+Icaza and \cite{BCIO,PW05,PW09} we use the \emph{multiplicative} normalisation
+\begin{equation}\label{eq:mult}
+S[v]=S_1[v^{(1)}]\,S_2[v^{(2)}],\quad m(S)=\min_{0\ne v\in\OK^2}S[v],\quad
+\gamma(S)=\frac{m(S)}{\sqrt{\det S_1\det S_2}},\quad \gK=\sup_S\gamma(S).
+\end{equation}
+This is a different theory from the \emph{additive} normalisation
+$S_1[v^{(1)}]+S_2[v^{(2)}]$ of Koecher, Leibak and Gunnells--Yasaki
+\cite{Leibak,LeibakThesis,GY}: the minimum is a product rather than a sum, so it is not a
+linear function of $S$, and there is no Ryshkov polyhedron.  The two are never mixed below;
+the additive theory is the subject of the companion project \texttt{pav10/perfect\_forms},
+which we only quote for comparison.  (In the additive theory Ong \cite{Ong} classified the binary
+perfect forms over $\Q(\sqrt2)$, $\Q(\sqrt3)$, $\Q(\sqrt5)$ with Koecher's method: $2$, $3$, $2$
+classes, the same numbers as in the certified census of \texttt{perfect\_forms}; Ash \cite{Ash}
+uses the same Voronoi--Koecher decompositions of self-adjoint cones.  Neither concerns the
+multiplicative forms studied here.)
+
+Known values.  Cohn \cite{Cohn1} and Claus \cite{Claus} computed the lowest points of the
+Hilbert modular fundamental domain for $\Q(\sqrt2)$, $\Q(\sqrt3)$, $\Q(\sqrt5)$, which give $\gK$
+there (Claus determines them exactly, together with the boundary manifolds of the fundamental
+domain), and these values were established rigorously in \cite{BCIO}.  Pohst and Wagner obtained
+$\Q(\sqrt{13})$ and the extreme forms of $\Q(\sqrt{17})$ having a unimodular pair of minimal
+vectors, without deciding whether these are all \cite{PW05}; then $\Q(\sqrt6)$ ($\gK=5$) and
+$\Q(\sqrt{21})$ ($\gK=16/3$), and conjectured the values for $\Q(\sqrt7)$ and $\Q(\sqrt{11})$
+\cite{PW09}.  Coulangeon, Icaza and O'Ryan computed $\gK$ for the complex cubic field
+$\Q(\rho)$, $\rho^3-\rho^2+1=0$ \cite{CIO}, and note that every value known then was obtained by
+constructing the possible sets of minimal vectors of perfect forms.  In this project it was certified for $157$ fields with $D\le300$
+(branch-and-bound over the fundamental region, every certificate re-checked with outward
+rounding; see the project README).  The present notes report a second computation on top of
+the first: the complete list of \emph{perfect} forms (in Coulangeon's sense
+\cite{Coulangeon}) and their \emph{eutaxy}, for all $157$ fields.  The extreme forms (perfect
+and eutactic) are the local maxima of $\gamma$; the global maximum is $\gK$.
+
+\subsection*{Summary}
+\begin{enumerate}[leftmargin=*]
+\item \emph{Algorithm} (\S\ref{sec:algo}).  Voronoi's neighbour algorithm is not available in
+the multiplicative setting (\S\ref{subsec:whynot}).  We enumerate instead: a branch-and-bound
+over the region of highest points discards boxes with three certified rules, and the
+remaining small boxes are solved locally.  Theorem~\ref{thm:complete} proves completeness
+under a single hypothesis (H) on the local Newton solve, and \S\ref{subsec:improve} explains how
+interval Newton would remove it.  The cost is proportional to $\zeta_K(-1)$
+(\S\ref{subsec:cost}).
+\item \emph{Results} (\S\ref{sec:results}).  $55444$ perfect classes in $157$ fields
+(Table~\ref{tab:counts}); validation against the literature, against the certified $\gK$, and
+by an independent re-run at half the box size.
+\item \emph{Patterns} (\S\ref{sec:patterns}).  A volume law $\nperf\approx 7.9\,\zeta_K(-1)$
+(Conjecture~\ref{conj:volume}); an empirical law and a proved lower bound for $\gK$
+(Proposition~\ref{thm:lower}, after Thunder); CM structure of the symmetric forms (Observation~\ref{obs:cm}).
+\item \emph{Next steps} (\S\ref{sec:next}) and the literature we need (\S\ref{sec:lit}).
+\end{enumerate}
+
+\subsection*{Conventions}
+Labels: \PROVED{} --- proved here or in a cited source; \CERT{} --- established by a
+certified or exhaustive computation in the stated range (for the enumeration of perfect forms
+this means: complete under hypothesis (H) of \S\ref{subsec:correct}); \CONJ{} --- conjecture
+or heuristic.  Fits are least-squares fits of logarithms; $R^2$ is the coefficient of
+determination.  All numbers are produced by \texttt{analysis/patterns.py} from
+\texttt{results/perfect/} and \texttt{results/gamma\_K2.tsv}.
+
+\section{Setting}\label{sec:setting}
+
+\subsection{Forms as points of $\Hb^2$}
+Up to the two independent scalings $(S_1,S_2)\mapsto(\lambda_1S_1,\lambda_2S_2)$, which leave
+$\gamma$ unchanged, a form is a point $z=(z_1,z_2)\in\Hb^2$, $z_j=x_j+iy_j$, via
+$S_j\propto\frac1{y_j}\begin{pmatrix}1&x_j\\x_j&|z_j|^2\end{pmatrix}$.  For $v=(a,b)\in\OK^2$,
+\[
+f_v(z)=\frac{|a^{(1)}+b^{(1)}z_1|^2\,|a^{(2)}+b^{(2)}z_2|^2}{y_1y_2},\qquad
+G(z)=\min_{v\ne0}f_v(z)=\gamma(S).
+\]
+$G$ is invariant under $\GL_2(\OK)$ and under the Galois swap $(z_1,z_2)\mapsto(z_2,z_1)$, and
+$f_{\varepsilon v}=f_v$ for units $\varepsilon$, so minimal vectors come in \emph{unit classes}.
+The space of forms modulo scaling is thus $\Hb^2$ itself (real dimension $4$), and forms modulo
+equivalence are points of the Hilbert modular surface $\PGL_2(\OK)\backslash\Hb^2$.
+(In the additive normalisation only the common scaling is free, and the space has dimension
+$5$; see \S\ref{subsec:volume}.)
+
+\subsection{Highest points and the search region}
+For $h=1$ every orbit has a \emph{highest} point (maximal $y_1y_2$), and there $e_1=(1,0)$ is
+a minimal vector, so $G(z)=f_{e_1}(z)=1/(y_1y_2)$ \cite[Prop.~1.1]{BCIO}.  Using translations
+by $\OK$, $z\mapsto\varepsilon_0^kz$, $x\mapsto-x$ (all in $\PGL_2(\OK)$) and the Galois swap,
+every orbit has a highest point in
+\[
+\mathcal R=\{x=r_1+r_2\omega,\ r_1\in[-\tfrac12,\tfrac12],\ r_2\in[0,\tfrac12];\
+y_2/y_1\in[1,\varepsilon_0];\ y_1y_2\ge 2/d\},
+\]
+$\omega=(1+\sqrt D)/2$ or $\sqrt D$; the last condition is Cohn's bound $\gK\le d/2$
+\cite{Cohn1,Cohn2}.  For $h>1$ the project uses one \emph{chart} per pair of ideal classes
+$\{C,C^{-1}\}$: in the chart of an integral ideal $\mathfrak c$ of minimal norm in $C$ the
+lattice is $\mathfrak c^{-1}\oplus\mathfrak c$, with the same region up to the translation lattice
+(project README, ``Steinitz charts'').  We write $t=\frac12\log(y_1y_2)$,
+$s=\frac12\log(y_2/y_1)$, and use box coordinates $(x_1,x_2,s,t)$; within a chart put
+$N_v=f_v/f_{e_1}$, so that $N_v(z)=|a^{(1)}+b^{(1)}z_1|^2|a^{(2)}+b^{(2)}z_2|^2$.
+
+\subsection{Perfection and eutaxy}
+For a form $S$ and a minimal vector $v$ let
+\[
+X_v=\bigl(S_2[v^{(2)}]\,v^{(1)}v^{(1)T},\ S_1[v^{(1)}]\,v^{(2)}v^{(2)T}\bigr),
+\]
+the gradient of $S\mapsto S[v]$ in the $6$-dimensional space $\mathrm{Sym}_2(\R)^2$; $X_{\varepsilon v}=X_v$
+for units.  $S$ is \emph{perfect} if the $X_v$ ($v$ minimal) span a space of dimension $5$,
+the maximum possible \cite{Coulangeon,BCIO}; \emph{eutactic} if
+$(S_1^{-1},S_2^{-1})=\sum_v\rho_vX_v$ with all $\rho_v>0$; \emph{weakly eutactic} if this
+holds with $\rho_v\ge0$ but not with $\rho_v>0$; and \emph{extreme} (a strict local maximum of
+$\gamma$) iff perfect and eutactic \cite{Coulangeon}.
+
+\section{The enumeration}\label{sec:algo}
+
+\subsection{Why not Voronoi's algorithm}\label{subsec:whynot}
+In the additive theory $S\mapsto S_1[v^{(1)}]+S_2[v^{(2)}]$ is linear, the forms with minimum
+$\ge1$ form a locally finite convex polyhedron (Ryshkov), perfect forms are its vertices, and
+Voronoi's algorithm walks from vertex to neighbouring vertex
+\cite{Voronoi,Leibak,GY}.  In the multiplicative theory the constraint $S[v]\ge1$ is
+not linear (it is $\log S_1[v^{(1)}]+\log S_2[v^{(2)}]\ge0$), the region $\{m\ge1\}$ is not
+convex, and the local structure at a perfect point --- although described by Coulangeon's
+theory --- does not give a finite combinatorial ``neighbour'' step that is guaranteed to
+succeed.  We implemented such a walk (\texttt{voronoi.py}: Lipschitz-certified steps along the
+edges of the arrangement $\{f_v=G\}$); it works on generic vertices but fails on degenerate
+faces, where more than the expected number of $f_v$ meet.  We therefore enumerate.
+
+\subsection{The algorithm}\label{subsec:algo}
+Fix a chart.  Let $\mathcal V$ be a finite set of unit classes containing every class $v$ with
+$f_v\le d/2$ somewhere on $\mathcal R$ (it exists and is computed exactly as in the
+$\gK$-certificate).  For a box $B$ of $(x_1,x_2,s,t)$-space with $t\le0$:
+\begin{description}[leftmargin=*]
+\item[Rule 3] discard $B$ if it misses the translation parallelogram;
+\item[Rule 1] discard $B$ if $\sup_BN_v<1$ for some $v\in\mathcal V$ (then $e_1$ is not
+minimal anywhere in $B$, so $B\cap\mathcal R'=\emptyset$, $\mathcal R'$ the set of points of
+$\mathcal R$ at which $e_1$ is minimal);
+\item[Rule 5] discard $B$ if fewer than $5$ classes $v\in\mathcal V$ (including $e_1$, for which
+$N_{e_1}\equiv1$) satisfy $\inf_BN_v\le1$.
+\end{description}
+The bounds $\sup_BN_v$, $\inf_BN_v$ are the product bounds of the $\gK$-certificate (exact
+interval bounds for $|a+bz|^2$ on a box, evaluated in floating point with a relative safety
+margin $10^{-9}$).  Boxes that survive are bisected along the coordinate of largest
+\emph{hyperbolic} width ($\Delta x_j/y_j$, $\Delta s$, $\Delta t$) until that width is
+$\le w_{\min}=0.05$.  In a surviving leaf $B$, with candidate set
+$C_B=\{v\ne e_1:\inf_BN_v\le1\}$:
+\begin{enumerate}[leftmargin=*]
+\item for every $4$-subset $\{v_1,\dots,v_4\}\subset C_B$, run damped Newton on
+$\log N_{v_i}(q)=0$, $i=1,\dots,4$, in $q=(x_1,x_2,\log y_1,\log y_2)$, from the centre of
+$B$ and three random points of $B$; accept the first limit that lies in $B$ (with a margin
+of $1\%$ of the box size);
+\item polish an accepted point to $50$ digits; compute the full set $M$ of minimal classes
+\emph{independently of $\mathcal V$} by the exact short-vector enumeration; reject the point
+if $e_1$ is not minimal; compute the rank of $\{X_v\}_{v\in M}$ and keep the point if it is
+$5$;
+\item decide eutaxy by a linear programme (and, when $|M|=5$, by solving for the unique
+$\rho$ at $50$ digits).
+\end{enumerate}
+Finally the perfect points from all charts are grouped into $\GL_2(\OK)$-classes by
+\cite[Alg.~11]{PW05} in exact arithmetic, and the stabiliser of each class in
+$\GL_2(\OK)/\OK^\times$ is computed.  Large fundamental units are handled by cutting the
+$s$-range into slabs.
+
+\subsection{Correctness}\label{subsec:correct}
+
+\begin{lemma}[\PROVED]\label{lem:height}
+Let $z\in\mathcal R'$ be perfect.  Then $z$ has a minimal class $v=(a,b)$ with $b\ne0$, and
+$y_1y_2\le1$, i.e.\ $t\le0$; in the chart of $\mathfrak c$, $y_1y_2\le N(\mathfrak c)^{-1}\le1$.
+For $h=1$ every minimal class other than that of $e_1$ has $b\ne0$.
+\end{lemma}
+\begin{proof}
+For a minimal $v=(a,0)$ we have $S_j[v^{(j)}]=a^{(j)2}S_j[e_1]$ and $S[v]=S[e_1]=m$, so
+$X_v=\bigl(\tfrac{m}{S_1[e_1]}E_{11},\tfrac{m}{S_2[e_1]}E_{11}\bigr)=X_{e_1}$ ($E_{11}=e_1e_1^T$).
+So classes with $b=0$ add nothing to the rank, and a perfect point (rank $5$) has a minimal class
+with $b\ne0$.  For it,
+$f_v\ge (b^{(1)}y_1)^2(b^{(2)}y_2)^2/(y_1y_2)=N(b)^2y_1y_2$, while $f_v=f_{e_1}=1/(y_1y_2)$;
+hence $(y_1y_2)^2\le N(b)^{-2}$.  For $h=1$, $|N(b)|\ge1$; in a chart $b\in\mathfrak c$, so
+$|N(b)|\ge N(\mathfrak c)\ge1$.  Finally, for $h=1$ and $b=0$, $f_v=N(a)^2f_{e_1}$ forces
+$|N(a)|=1$, so $a$ is a unit and $v$ is in the class of $e_1$.
+\end{proof}
+
+\begin{lemma}[\PROVED]\label{lem:rank}
+At $z\in\mathcal R'$ with minimal classes $M\ni e_1$, the rank of $\{X_v\}_{v\in M}$ is $5$ if
+and only if the differentials $d\log N_v$, $v\in M\setminus\{e_1\}$, span the $4$-dimensional
+cotangent space of $\Hb^2$ at $z$.  In that case some $4$ of them are linearly independent,
+and $z$ is an isolated, nondegenerate solution of the corresponding $4\times4$ system
+$\log N_{v_i}=0$.
+\end{lemma}
+\begin{proof}
+For minimal $v$, $\langle X_v,(S_1,0)\rangle=\langle X_v,(0,S_2)\rangle=S[v]=m$, so all $X_v$
+lie in an affine subspace $A$ of codimension $2$ not containing $0$.  Hence
+$\operatorname{rank}\{X_v\}=1+\operatorname{rank}\{X_v-X_{e_1}\}$, and the differences lie in
+the annihilator of the two scaling directions, i.e.\ in the cotangent space of the quotient
+$\Hb^2$, of dimension $4$.  There $X_v-X_{e_1}$ is $m$ times $d\log(S[v]/S[e_1])=d\log N_v$.
+So rank $5$ $\iff$ the $d\log N_v$ span a space of dimension $4$, and the Jacobian of a suitable
+$4$-subset is invertible at $z$.
+\end{proof}
+
+\begin{lemma}[\PROVED, up to floating point]\label{lem:rules}
+Rules 1, 3 and 5 never discard a box containing a perfect point $z\in\mathcal R'$ with $t\le0$.
+Every minimal class of such a $z$ lies in $\mathcal V$ and in the candidate set of every
+leaf containing $z$.
+\end{lemma}
+\begin{proof}
+At $z$, $N_v(z)\ge1$ for all $v$ ($e_1$ minimal), so $\sup_BN_v\ge1$: rule 1 does not apply;
+$z$ lies in the parallelogram: rule 3 does not apply; $z$ has at least $5$ minimal classes
+(perfection needs rank $5$), each with $N_v(z)=1$, hence $\inf_BN_v\le1$: rule 5 does not
+apply.  A minimal class has $f_v(z)=G(z)\le\gK\le d/2$, so it is in $\mathcal V$.  The bounds
+are exact interval bounds evaluated in floating point with a safety margin; ``up to floating
+point'' refers to this evaluation, which is the same as in the $\gK$-certificate (there
+re-checked with outward rounding).
+\end{proof}
+
+\noindent
+\textbf{Hypothesis (H).}  \emph{For every perfect point $z$ and every leaf $B\ni z$, Newton for
+at least one $4$-subset of minimal classes of $z$ with invertible Jacobian (Lemma~\ref{lem:rank})
+converges to $z$ from one of the four starting points, and no other solution in $B$ of the
+same subset is reached first.}
+
+\begin{theorem}[completeness, \PROVED{} under (H)]\label{thm:complete}
+Under (H) the enumeration returns a representative of every $\GL_2(\OK)$-class of perfect
+binary Humbert forms, and only perfect forms.
+\end{theorem}
+\begin{proof}
+Every class has a highest point in some chart's region with $e_1$ minimal and, by
+Lemma~\ref{lem:height}, $t\le0$.  The leaves and discarded boxes tile the box cover of the
+region, and by Lemma~\ref{lem:rules} $z$ lies in a leaf $B$ whose candidate set contains its
+minimal classes.  By (H) some $4$-subset produces $z$; the polished point has the minimal set
+and rank computed independently of $\mathcal V$, so it is kept, and only points with rank $5$
+are kept.  The classification is exact.
+\end{proof}
+
+\begin{remark}[what is not rigorous]\label{rem:nonrig}
+(i) Hypothesis (H): Newton has a nonsingular solution in the box but convergence from the
+chosen starts is not proved; the solve is local (box width $\le0.05$ in hyperbolic terms) and
+started from $4$ points, and a failure would need all of them to fail.  (ii) The rank $5$ and
+the eutaxy decisions are made at $50$ digits with tolerances ($10^{-25}$ relative for singular
+values, $10^{-9}$ for the eutaxy margin), so a weakly eutactic class is weakly eutactic to within
+$10^{-9}$.  (iii) The class list is checked against the certified $\gK$ only through its maximum.
+\end{remark}
+
+\subsection{Cost}\label{subsec:cost}
+Over the $157$ fields the search used $7.2\cdot10^8$ boxes, $5.3\cdot10^7$ leaves and
+$1.5\cdot10^9$ Newton runs.  The number of boxes grows like $\zeta_K(-1)^{1.02}$ ($R^2=0.91$,
+the $127$ fields with $d\ge100$), the same law as the number of perfect classes
+(\S\ref{subsec:volume}): the work is proportional to the volume of the Hilbert modular
+surface, i.e.\ roughly to $d^{3/2}$.  The single most expensive field took $3.2$ hours on one
+core ($D=263$).  Each class is found $3.1$ times on average (different charts, translates and
+slabs), and $7.2\%$ of the classes only once.
+
+\subsection{Making it robust and faster}\label{subsec:improve}
+\begin{enumerate}[leftmargin=*]
+\item \emph{Certified completeness.}  Replace (H) by an interval Newton (Krawczyk) test per
+$4$-subset and leaf: either it proves that the subset has no solution in $B$, or that it has
+exactly one; leaves where neither holds are bisected.  At a perfect point the Jacobian of
+some subset is invertible (Lemma~\ref{lem:rank}), so near it the test succeeds after finitely
+many bisections; degenerate (non-perfect) crossings are rejected by the rank test.  Together
+with an interval check of the rank and of the eutaxy LP this makes the lists certified.
+\item \emph{Fewer subsets.}  Most of the time goes to $4$-subsets with no common zero in the
+leaf.  Pairwise and triple tests (interval bounds on $\log N_v-\log N_w$) discard most of them
+before Newton.
+\item \emph{Fewer copies.}  Restricting the region by the stabilisers of the cusps (and the
+chart symmetries) would remove most of the $3.1$ copies per class.
+\item \emph{Parallelism inside a field.}  Boxes are independent; splitting the $s$- or
+$t$-range over processes removes the long tail (now one process per field).
+\item \emph{A compiled kernel} for the box bounds and the batched Newton.  (The batched Newton
+already gave a factor $\approx3$ over the per-subset loop.)
+\item \emph{A multiplicative neighbour walk} with exact handling of degenerate faces would make
+the cost proportional to the output; a mass formula over the cells (as in the additive census
+of \texttt{perfect\_forms}) would then give an independent completeness check.
+\end{enumerate}
+
+\subsection{Is the algorithm new?}\label{subsec:new}
+The ingredients are known: highest points and the floor of the fundamental domain
+\cite{Cohn1,BCIO,PW09}, perfection and eutaxy in this setting \cite{Coulangeon}, the
+equivalence test \cite[Alg.~11]{PW05}, and the idea of solving $S[v]=1$ for a few candidate
+minimal vectors.  The earlier algorithms differ from ours as follows.
+\begin{itemize}[leftmargin=*]
+\item \cite[Alg.~9]{PW05} and \cite{BCIO,CIO} normalise $e_1,e_2\in M(S)$ (a \emph{unimodular
+pair} of minimal vectors), enumerate globally all $3$-sets of candidates from a finite set $M$
+determined by norm bounds \cite[Lemmas~7, 8]{PW05}, solve the polynomial systems $S[u_i]=1$
+(three unknowns $b_1,b_2,c$), and keep the solutions that are perfect and eutactic.  This
+finds the \emph{extreme} forms with a unimodular pair; that every extreme form has one must be
+proved field by field (\cite[Lemma~16]{PW05} for $\Q(\sqrt{13})$; \cite[Props.~2.9, 2.10]{CIO}
+via Lenstra's constant), and for $\Q(\sqrt{17})$ it was left open.
+\item \cite[\S2]{PW09} steps through Cohn's description of the fundamental domain with a
+prescribed increment, collects the minimal vectors met in a set $M$, and solves the systems
+for all $4$-sets of $M$; there is no criterion that $M$ contains all the vectors needed
+\cite[p.~940]{PW09}.
+\item For imaginary quadratic $K$ (binary hermitian forms, $\Hb^3$ in place of $\Hb^2$),
+\cite{CIL} compute the projective constant and its extreme forms for $|d_K|<70$ from a cellular
+fundamental domain of the Bianchi group (Mendoza, Vogtmann), as the lowest points of that
+domain.  This is the closest analogue we know of a geometric computation over the whole
+fundamental domain; it determines $\gamma$ and the forms attaining it, not all perfect forms.
+\item Here only $e_1$ is normalised (it is minimal at the highest point, for any class
+number, chart by chart), so no unimodular-pair hypothesis is needed.  For $h_K>1$ minimal
+vectors need not be unimodular (Berg\'e's example over $\Q(\sqrt{10})$, \cite[\S2]{BI97}), but the
+content ideal of a minimal vector has least norm in its class \cite[\S2]{BI97}, which is why the
+charts are indexed by ideals of least norm; the $4$-subsets are
+formed \emph{locally}, in boxes of hyperbolic width $\le0.05$ that survive certified
+discarding rules, so that the candidate set provably contains the minimal classes of every
+perfect point in the box (Lemma~\ref{lem:rules}); and all perfect forms are kept, not only the
+eutactic ones.
+\end{itemize}
+To our knowledge this combination, and complete lists of multiplicative perfect forms for more
+than a few fields, are new.  We have not seen Wagner's tables \cite{PW09} (cited there as a web
+page) or later work by the same authors.
+
+\section{Results}\label{sec:results}
+
+\begin{table}[ht]
+\caption{Totals over the $157$ fields with certified $\gK$, $D\le300$ \CERT.}\label{tab:counts}
+\begin{tabular}{lr}
+\toprule
+perfect classes & $55444$\\
+\quad extreme (perfect $+$ eutactic) & $15313$\\
+\quad weakly eutactic (in $52$ fields) & $80$\\
+\quad not eutactic & $40051$\\
+fields with one perfect class & $D=2,3,5$\\
+most perfect classes & $D=274$: $1467$\\
+median fraction extreme & $0.332$\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Validation}\label{subsec:validation}
+\begin{itemize}[leftmargin=*]
+\item \CERT{} In every one of the $157$ fields the largest $\gamma$ of a perfect class equals the
+certified $\gK$ (relative difference $\le10^{-12}$).
+\item \CERT{} Agreement with the literature.  $D=2,3,5$: one class each \cite{BCIO}
+($|\Aut|=10$ for $D=5$), with $\gamma=(12+8\sqrt6)/15$, $4$, $4/\sqrt5$, the reciprocals of the
+heights $N(y)=(2\sqrt6-3)/4$, $1/4$, $\sqrt5/4$ of Claus's lowest points \cite[S\"atze~6, 3, 5]{Claus}.  $D=13$: two perfect classes, both extreme, $\gamma=(84+6\sqrt{91})/35
+=\sqrt{(1476+144\sqrt{91})/175}$ (critical) and $\gamma=4.00045\ldots$ (five minimal classes),
+the forms in rows $2$ and $1$ of the table of \cite[p.~916]{PW05}; the form of row $3$ has
+perfection rank $<5$ there and is correctly absent.  $D=17$: exactly the two extreme forms of
+\cite[pp.~918--919]{PW05}, $\gamma=\sqrt{(784+128\sqrt{34})/225}=2.6079893\ldots$ and
+$(40+8\sqrt{85})/45=\sqrt{(1408+128\sqrt{85})/405}=2.5279190\ldots$, and no other perfect
+class; so the question left open there is settled and $\gamma_{\Q(\sqrt{17}),2}=2.6079893\ldots$
+(the $\gK$-certificate confirms the value).  $D=6$, $21$: $\gK=5$, $16/3$ as in \cite{PW09};
+$D=7$, $11$: the conjectured values $\sqrt{(5584+640\sqrt{70})/605}=(100+16\sqrt{70})/55$ and
+$28/3$ of \cite[p.~946]{PW09} are the certified ones.  $D=10$: $7$ perfect, $5$ extreme (test
+suite).  Where the experimental
+neighbour walk completed, it found the same classes.
+\item \CERT{} Independent re-run: the fields with $D\le 77$ listed in the file
+\texttt{robustness.txt} of \texttt{results/perfect/} were recomputed with half the leaf width
+($w_{\min}=0.025$, hence different leaves and Newton starts); the class lists (value of
+$\gamma$ to $25$ digits, number of minimal classes, eutaxy, $|\Aut|$) agree in every field.
+\item An audit after the short-vector fix (project history): one record changed ($D=46$ had a
+spurious duplicate class with one minimal vector missed; now $84$ perfect, $39$ extreme).
+\end{itemize}
+
+\subsection{The table}
+Table~\ref{tab:all} in the appendix lists $\nperf$ and $\nex$ for every field; the file
+\texttt{D$\langle D\rangle$.json} in \texttt{results/perfect/} contains every class (value of $\gamma$,
+closed form when PSLQ finds one, minimal vectors, rank, eutactic coefficients, $|\Aut|$, a point).
+
+\section{Patterns}\label{sec:patterns}
+
+\subsection{A volume law for the number of perfect forms}\label{subsec:volume}
+\begin{observation}[\CERT, $157$ fields]\label{obs:volume}
+Over the $127$ fields with $d\ge100$ the log-log slope of $\nperf$ against $\zeta_K(-1)$ is
+$1.017$ ($R^2=0.984$); against $\zeta_K(-1)\Reg$ it is $0.807$ ($R^2=0.892$), against $d$ it is
+$1.525$ ($R^2=0.973$), against $h\Reg$ $1.604$ ($R^2=0.54$).  For the $98$ fields with $d>200$,
+$\nperf/\zeta_K(-1)$ has median $7.90$, quartiles $7.37$, $8.56$ and range $[5.96,10.86]$; the
+mass $\sum1/|\Aut|$ behaves the same way (median $7.74$).  For the extreme forms the slope
+against $\zeta_K(-1)$ is $0.823$.
+\end{observation}
+
+\begin{conjecture}[\CONJ]\label{conj:volume}
+$\nperf(K)\asymp\zeta_K(-1)$ as $d_K\to\infty$, with constants independent of $\Reg$ and $h_K$.
+\end{conjecture}
+
+Heuristic.  By Siegel's theorem as stated in \cite[\S1.3, (9)]{Hirzebruch} the Euler volume
+(Gauss--Bonnet integral) of $\PSL_2(\OK)\backslash\Hb^2$ is $2\zeta_K(-1)$, and its hyperbolic
+volume (measure $\prod_j dx_j\,dy_j/y_j^2$) is $2\pi^{-2}d_K^{3/2}\zeta_K(2)=8\pi^2\zeta_K(-1)$
+(\emph{loc.\ cit.}; the formula for $\zeta_K(-1)$ used in \texttt{analysis/patterns.py} is
+\cite[\S1.4, (11), (12)]{Hirzebruch}); $\zeta_K(-1)\asymp d^{3/2}L(2,\chi_d)$.  In the
+multiplicative normalisation the space of forms modulo scaling is exactly $\Hb^2$, so a
+locally finite configuration of perfect points with bounded local density has
+$\asymp\mathrm{vol}$ classes.  In the additive normalisation the separate scalings of $S_1$
+and $S_2$ are not symmetries; the space has one more dimension, the log-unit direction, and
+\texttt{perfect\_forms} (FINDINGS \S3, additive, $d\le100$) finds
+$n\asymp\zeta_K(-1)\Reg$ there; for unary forms Yasaki's bound \cite{Yasaki} relates the count
+to the period of a continued fraction, i.e.\ to $\Reg$.  The three laws are consistent with
+``number of perfect forms $\asymp$ volume of the space of forms modulo $\GL_n(\OK)$ and the
+symmetries of the normalisation''.
+
+The constant $7.9$ is not explained.  An Euler-characteristic argument would need the full cell
+structure (edges and higher cells), which the multiplicative theory does not provide
+(\S\ref{subsec:whynot}); a neighbour walk with cells would turn the heuristic into a mass
+formula and a completeness certificate.
+
+\subsection{The Hermite--Humbert constant}\label{subsec:gamma}
+
+\begin{observation}[\CERT, $157$ fields]\label{obs:gamma}
+A least-squares fit gives
+\[
+\log\gK\approx 1.172\log d-0.614\log\Reg-1.711\qquad(R^2=0.977,\ \text{residual s.d. } 0.18),
+\]
+against $R^2=0.923$ for $\log d$ alone; adding $\log h$ changes nothing (coefficient $-0.05$).
+$\gK/d$ ranges from $0.068$ ($D=46$) to $0.358$ ($D=5$), well below Cohn's $\tfrac12$.  The
+low values of $\gK/d$ for $D\equiv1\pmod8$ ($2$ split) are explained by the regulator: the
+residuals of the fit have mean $-0.04$ ($2$ split), $-0.03$ ($2$ inert), $+0.02$ ($2$
+ramified).
+\end{observation}
+
+Known bounds.  Upper: $\gK<d/2$ (Cohn, as quoted in \cite{PW05,PW09}; see
+\cite{Cohn1,Cohn2}; the non-strict form is the case $m=n=2$ of
+$\gamma_{K,n}\le m^{-m}\gamma_{mn}^{\,m}|d_K|$ \cite[Thm.~4.1, Rem.~4.2]{BI04}, with $\gamma_4^2=2$) and $\gK\le16d/\pi^2$ (\cite[Thm.~1]{Icaza}, $n=2$, $r=2$, $s=0$).  Lower:
+$\gK\ge B(K)$, the least norm of a nontrivial integral ideal, whenever Lenstra's constant
+satisfies $L(K)<4$ \cite[Prop.~4.1]{CIO}; for quadratic $K$, $B(K)\le4$.  For $h_K>1$:
+$\gK\ge N(I)N(J)$ for ideals $I$, $J$ of least norm in mutually inverse non-principal classes
+(proof of \cite[Cor.~3.2]{BI04}, stated there as $\gK\ge2\mathcal N(K)$); since $I^\sigma$ lies in the
+inverse class, $N(J)=N(I)$, so $\gK\ge\mathcal N(K)^2$ with $\mathcal N(K)$ the largest least norm of
+an ideal class.  A lower bound
+linear in $\sqrt{d_K}$ is attributed to a preprint of Baeza in \cite[p.~21]{Icaza}
+(not seen).  The strongest is the Minkowski--Hlawka-type bound of Thunder
+\cite[Thm.~2]{Thunder}: with $n=2$, $d=1$ (his notation), $r=2$, $s=0$, $w=2$ it reads
+$\gamma_2(K)^{2}\ge\zeta_K(2)\,d_K/(\pi^2h_K\Reg)$.  How $\gamma_2(K)^{[K:\Q]}$ compares with
+$\gK$ is settled in \cite[\S5]{CIL}: with the projective constant
+$\gamma^{\mathrm p}_{K}=\sup_S\min_v S[v]/(N((v))^2\sqrt{\det S})$, where $(v)$ is the ideal
+generated by the coordinates of $v$, one has $\gamma^{\mathrm p}_K\le\gK$ and
+$\gamma^{\mathrm p}_K\le\gamma_2(K)^{[K:\Q]}$, with equality in both when $h_K=1$.  (Thunder's
+height divides by the norm of the content and his maximum runs over all $h_K$ components of
+$\GL_2(\mathbb A_K)$, i.e.\ also over non-free lattices.)  So for $h_K=1$, with
+$\zeta_K(-1)=d^{3/2}\zeta_K(2)/(4\pi^4)$,
+\begin{equation}\label{eq:thunder}
+\gK\ \ge\ \frac{\zeta_K(2)\,d_K}{\pi^2h_K\Reg}\ =\ \frac{4\pi^2\zeta_K(-1)}{h_K\sqrt{d_K}\,\Reg},
+\end{equation}
+while for $h_K>1$ \eqref{eq:thunder} is proved for $\gamma_2(K)^2$ but not for $\gK$; we keep
+the factor $h_K$ in the formula to compare the data with Thunder's bound.  For $h_K=1$ the following elementary argument gives the same bound; it explains why the
+regulator enters: the cusp has length $\Reg$, so a fixed volume spread over a longer cusp
+forces the floor of the fundamental domain (height $1/\gK$) up.
+
+\begin{proposition}[\PROVED{} for $h_K=1$, given Siegel's volume formula; the case $h_K=1$ of
+\cite{Thunder}]\label{thm:lower}
+$\gK\ge 4\pi^2\zeta_K(-1)/(\sqrt{d_K}\,\Reg)$.
+\end{proposition}
+\begin{proof}
+Every orbit has a highest point $z\in\mathcal R$, and there $G(z)=1/(y_1y_2)\le\gK$, so the set
+$\mathcal R(Y)=\{z\in\mathcal R:\ y_1y_2\ge Y\}$ with $Y=1/\gK$ meets every orbit of the group
+$\Gamma$ generated by $\PGL_2(\OK)$ and the Galois swap.  Hence its hyperbolic volume is at least
+that of $\Gamma\backslash\Hb^2$.  The $x$-part of $\mathcal R$ has area $\sqrt d/2$ (half a period
+parallelogram of $\OK$, of area $\sqrt d$).  With $p=\log(y_1y_2)$, $q=\log(y_2/y_1)$,
+$dy_1dy_2/(y_1y_2)^2=\tfrac12e^{-p}\,dp\,dq$ and $q\in[0,\Reg]$, so
+$\mathrm{vol}\,\mathcal R(Y)=\frac{\sqrt d}2\cdot\frac{\Reg}{2}\cdot\frac1Y=\frac{\sqrt d\,\Reg\,\gK}4$.
+On the other hand $[\PGL_2(\OK):\PSL_2(\OK)]=|\OK^\times/\OK^{\times2}|=4$ and the swap has index
+$2$, so $\mathrm{vol}(\Gamma\backslash\Hb^2)=8\pi^2\zeta_K(-1)/8=\pi^2\zeta_K(-1)$ (Siegel's
+formula: the hyperbolic volume of $\PSL_2(\OK)\backslash\Hb^2$ is $2\pi^{-2}d_K^{3/2}\zeta_K(2)
+=8\pi^2\zeta_K(-1)$, \cite[\S1.3]{Hirzebruch}).
+\end{proof}
+
+\begin{remark}[imaginary quadratic fields]
+The same covering argument works for binary hermitian forms over an imaginary quadratic field
+$K$ with $h_K=1$, in the normalisation of \cite{CIL}.  A form corresponds to a point $(x,r)$ of
+$\Hb^3$ with $S[e_1]/\sqrt{\det S}=1/r$ at a highest point; the highest points lie over a
+fundamental domain of $\Gamma_\infty$ in $\mathbb C$, of area $\sqrt{|d_K|}/(2w')$ with
+$w'=|\OK^\times|/2$, and $\int_{1/\gamma}^\infty dr/r^3=\gamma^2/2$.  With Humbert's formula
+$\mathrm{vol}(\PSL_2(\OK)\backslash\Hb^3)=|d_K|^{3/2}\zeta_K(2)/(4\pi^2)$, whose proof was completed by
+Grunewald and K\"uhnlein \cite{GK}, this gives
+$\gamma_K^2\ge w_K\zeta_K(2)|d_K|/(2\pi^2)$, which is Thunder's bound \cite[Thm.~2]{Thunder} with $r=0$,
+$s=1$, $h_K=1$.  Against the exact values for the nine fields with $h_K=1$ \cite[Table~1]{CIL} the
+ratio $\gamma_K/\text{bound}$ grows from $1.13$ ($d_K=-3$) to $2.13$ ($d_K=-163$) \CERT, much as
+in Observation~\ref{obs:bounds} for real quadratic fields.
+\end{remark}
+
+\begin{observation}[\CERT, $157$ fields]\label{obs:bounds}
+All these bounds hold in the data.  $\gK$ divided by \eqref{eq:thunder} lies in $[1.46,14.5]$
+(minimum at $D=5$, then $D=2$, $17$); for $h_K>1$, where \eqref{eq:thunder} is not a theorem
+for $\gK$, the ratio is $\ge4.35$, and even without the factor $1/h_K$ it is $\ge2.17$.  $\gK/B(K)\ge1.053$ for $D\ne5$ (nearly attained at $D=2$).
+$\gK/(d/2)\le0.72$ and $\gK/(16d/\pi^2)\le0.22$.  For the $87$ fields with $h_K>1$,
+$\gK/\mathcal N(K)^2\ge2.18$ (minimum at $D=10$; $\mathcal N(K)$ ranges up to $10$), so the bound
+of \cite{BI04} is within a factor of about $2$ of the truth across the range, much closer than
+\eqref{eq:thunder} for large $d$.  The ratio to \eqref{eq:thunder} grows with $d$
+(log-log slope of $\gK$ against $\zeta_K(-1)/(\sqrt d\Reg)$: $1.27$).
+\end{observation}
+
+\begin{remark}
+Since $\zeta_K(2)\in[\zeta(4),\zeta(2)^2]$, \eqref{eq:thunder} gives
+$\gK\gg d/(h\Reg)$, and $h\Reg\ll\sqrt d\log d$ by the class number formula, so
+$\gK\gg\sqrt d/\log d$ for real quadratic $K$ with $h_K=1$; with $\gK<d/2$ this brackets the growth.  The
+data sit near $d^{1.17}\Reg^{-0.61}$ and do not depend on $h$.  Questions: is $\gK\asymp d/\Reg$
+(the fit says no)?  Does \eqref{eq:thunder} hold for $\gK$ when $h_K>1$, and can its factor
+$1/h_K$ be removed (the data say yes to both, with room to spare)?  Is $\limsup\gK/d<\tfrac12$?
+\end{remark}
+
+\subsection{Minimal vectors and automorphisms}\label{subsec:aut}
+\begin{observation}[\CERT]
+Of the $55444$ perfect classes, $44643$ ($80.5\%$) have exactly $5$ minimal classes, the minimum
+for perfection (Coulangeon's bound $\#M(S)\ge rn(n+1)/2+sn^2-(r+s-1)=5$, \cite[(2--1)]{CIO},
+\cite[Cor.~4]{PW05}); $8472$ have $6$; the maximum is $24$ ($D=263$).  The stabiliser in
+$\GL_2(\OK)/\OK^\times$ is trivial for $53228$ classes, of order $2$ for $2106$, and of order
+$3,4,6,10,24$ for $4,64,40,1,1$ classes.
+\end{observation}
+
+\begin{observation}[\CERT, $157$ fields]\label{obs:cm}
+All $45$ classes whose stabiliser has order divisible by $3$ have $\tfrac34\gamma$ equal to an
+integer of the form $a^2+ab+b^2$ (a norm from $\Z[\zeta_3]$).  Of the $64$ classes with stabiliser of
+order $4$, $51$ have $\gamma$ an integer of the form $a^2+b^2$.  The stabiliser of order $10$ is
+that of the unique class of $\Q(\sqrt5)$ ($\gamma=4/\sqrt5$), and the one of order $24$ that of
+$\Q(\sqrt3)$ ($\gamma=4$).
+\end{observation}
+
+\begin{proposition}[\PROVED]\label{prop:cm}
+Let $g\in\GL_2(\OK)$ stabilise a form and have order $3$ in $\PGL_2(K)$.  Then
+$g^2-tg+\delta=0$ with $t\in\OK$, $\delta=\det g=t^2$, and $\OK^2$ is a module over the order
+$\OK[g]\cong\OK[\tfrac12 t(1+\sqrt{-3})]$ of the CM field $L=K(\sqrt{-3})$.
+\end{proposition}
+\begin{proof}
+$g^3$ is scalar and $g$ is not, so the eigenvalues are $\lambda,\lambda\zeta_3$; then
+$t=\lambda(1+\zeta_3)=-\lambda\zeta_3^2$ and $\delta=\lambda^2\zeta_3$, so $t^2=\delta$ and the
+discriminant is $t^2-4\delta=-3t^2$; $t\ne0$ since $\delta$ is a unit, so $g=\tfrac t2(1+\sqrt{-3})$ in
+$L=K(\sqrt{-3})$.
+\end{proof}
+
+Heuristically, a form fixed by $g$ is, in each embedding, invariant under a rotation of order $3$, hence a
+multiple of the hexagonal form, and $S[v]$ becomes a norm form of $L$ on a rank-one $\OK[g]$-module.
+Since $L=K(\sqrt{-3})\supset\Q(\sqrt{-3})$, norms from $L$ to $\Q$ factor through
+$\Q(\zeta_3)$; we expect this to explain the shape $\frac43(a^2+ab+b^2)$ in general \CONJ{}
+(note $\frac43=\gamma_2^2$, the square of the Hermite constant of the hexagonal lattice).  The same mechanism with $\zeta_4$, $\zeta_5$
+($\sqrt5\in K$) and $\zeta_{12}$ ($\sqrt3\in K$) accounts for the other symmetric forms.  This is
+the correspondence with quadratic (CM) extensions of $K$ asked about: forms with extra
+automorphisms carry the structure of hermitian forms over CM extensions $L/K$
+(Proposition~\ref{prop:cm} for order $3$), and we expect their $\gamma$ to be governed by norms
+from $L$ \CONJ.  Binary hermitian forms over an imaginary quadratic field are the case $K=\Q$
+of this picture; their (projective) Hermite constants are tabulated in \cite[Table~1]{CIL}, and
+the relative version over $L/K$ is what a proof of the conjecture would need.
+
+Elliptic points.  Since forms modulo scaling are the points of $\Hb^2$, a perfect class with
+$|\Aut|>1$ is a perfect point fixed by an elliptic element.  For $g$ as in
+Proposition~\ref{prop:cm}, $t$ is a unit ($t^2=\det g$), so $g/t\in\SL_2(\OK)$ has trace $1$ and
+order $3$ in $\PSL_2(\OK)$: every class with $3\mid|\Aut|$ is an elliptic point of order $3$ of
+the Hilbert modular group.  Ong asked, in the additive setting, whether the elliptic fixed points
+correspond to perfect forms \cite{Ong}.  Here the answer is mostly no \CERT: for the $71$ fields
+with $(D,6)=1$, $D\ge7$, Prestel's formula ($a_3=h(-3D)$ or $h(-12D)$ for $D\equiv1$ or $3\bmod4$,
+as quoted in \cite[p.~198]{Hirzebruch}) gives $822$ classes of elliptic points of order $3$ in total,
+and only $22$ perfect classes have $3\mid|\Aut|$ (at most $4\cdot22=88$ of the $822$ classes, since a
+$\GL_2(\OK)$-orbit splits into at most $|\OK^\times/\OK^{\times2}|=4$ orbits of $\PSL_2(\OK)$).
+For $\Q(\sqrt3)$ the lowest point is an elliptic fixed point of order $12$ \cite[Satz~3]{Claus}
+(stabiliser of order $24$ in $\GL_2(\OK)/\OK^\times$ here), but lowest points need not be elliptic:
+for $\Q(\sqrt2)$ Claus notes that his two lowest points modulo the Hilbert modular group are not
+elliptic fixed points \cite[\S4]{Claus}.
+
+\subsection{Eutaxy}
+The median fraction of extreme classes per field is $0.33$, against $0.97$ for perfect unary
+forms over real quadratic fields (\texttt{perfect\_forms}, FINDINGS \S5); weakly eutactic classes
+occur ($80$, in $52$ fields), unlike the unary case.  The number of extreme classes grows more
+slowly than $\nperf$ (slope $0.82$ against $\zeta_K(-1)$).
+
+\section{Next steps}\label{sec:next}
+
+\subsection{Completing $D\le300$ and certifying the lists}
+The $25$ fields with $D\le300$ whose $\gK$ is not certified (large units) are the obvious
+gap; the enumeration itself would run on them (it does not need $\gK$, only Cohn's bound), but
+its cost grows with the length of the cusp.  Certified completeness needs the interval-Newton
+version of \S\ref{subsec:improve} (estimated cost: a small constant factor, since most leaves
+have no solution and are rejected after one interval evaluation).
+
+\subsection{Ternary forms over real quadratic fields}
+The space of ternary forms modulo the two scalings is $(\SL_3(\R)/\mathrm{SO}_3)^2$, of
+dimension $10$.  A box enumeration in dimension $10$ is not feasible: the number of leaves
+scales like $w_{\min}^{-10}$ times the volume of $\PGL_3(\OK)\backslash(\SL_3(\R)/\mathrm{SO}_3)^2$,
+which already for $\Q(\sqrt5)$ is far beyond the binary case.  Feasible routes: (a) a
+multiplicative Voronoi walk (\S\ref{subsec:improve}, item 6), whose cost is proportional to
+the output; (b) a search for $\gamma_{K,3}$ alone, by local maximisation from many seeds
+together with structured candidates (the lattices whose trace form is similar to $E_6$, or
+hermitian structures over CM extensions as in Proposition~\ref{prop:cm}), with a
+branch-and-bound certificate only if a good candidate is found; (c) in the additive
+normalisation the Voronoi algorithm works in any rank, and \texttt{perfect\_forms} is the place
+for it.  We would start with (b) for $\Q(\sqrt2)$, $\Q(\sqrt3)$, $\Q(\sqrt5)$.  A free upper
+bound comes from the Mordell inequality of Baeza and Icaza \cite[\S3]{BI97}:
+$\gamma_{K,n}^{\,n-2}\le\gamma_{K,n-1}^{\,n-1}M_{n,K}^{2(n-1)/n}$, where $M_{n,K}$ bounds the norm of
+the content of minimal vectors ($M_{n,K}=1$ for $h_K=1$).  For $h_K=1$ this gives
+$\gamma_{K,3}\le\gamma_{K,2}^{\,2}$, so the $70$ fields of class number one in our table come
+with a certified upper bound for $\gamma_{K,3}$ at no cost (e.g.\ $\le\gamma_{\Q(\sqrt5),2}^2$),
+against which a candidate from (b) can be measured; and $\gamma_{K,4}^2\le\gamma_{K,3}^3$ links
+the next step.
+
+\subsection{Binary forms over totally real fields of higher degree}
+For a totally real cubic field the space of binary forms modulo the three scalings is $\Hb^3$
+(dimension $6$), $\gamma_{K,2}$ is again the reciprocal height of the floor, and every step of
+\S\ref{sec:algo} generalises (products of three factors, $\varepsilon$ in a rank-$2$ unit
+lattice, $6$-subsets for Newton).  The cost of the $\gK$-certificate and of the enumeration is
+proportional to the volume ($\asymp\zeta_K(-1)$ again) times $w_{\min}^{-6}$ instead of $w_{\min}^{-4}$:
+feasible for the smallest cubic fields ($d=49,81,148,169,\dots$), out of reach for large ones
+without the improvements above.  Fields with complex places are also natural first targets: a
+complex place contributes a factor $\Hb^3$, and \cite{CIO} gives a value to test against
+($\Q(\rho)$, $\rho^3-\rho^2+1=0$, $d_K=-23$: $\gK\approx2.4684958820$) and two further fields
+($x^3+x^2-x+1$, $d_K=-44$; $x^4+x^3+x^2+x+1$, $d_K=125$) where the same method applies.  The code is written for two embeddings throughout; a degree-$n$
+version is a rewrite of \texttt{humbert.py}, \texttt{certify.py} and \texttt{perfect.py}, not a
+patch.
+
+\subsection{Further questions suggested by the data}
+\begin{enumerate}[leftmargin=*]
+\item Prove $\nperf\asymp\zeta_K(-1)$ (Conjecture~\ref{conj:volume}), perhaps first a lower bound by
+a covering argument as in Proposition~\ref{thm:lower}.
+\item Explain $\gK\approx 0.18\,d^{1.17}\Reg^{-0.61}$; prove \eqref{eq:thunder} for $\gK$ when $h_K>1$, and without the factor $1/h_K$.
+\item Classify the symmetric forms by CM extensions $L/K$ (which $L$, which orders, which
+ideal classes) and compute their $\gamma$ from norms in $L$.
+\item The set $W\subset\Hb^2$ of points with at least two minimal classes has dimension $3$, the
+virtual cohomological dimension of $\PSL_2(\OK)$ (Borel--Serre, as recalled in \cite[\S1]{Ash});
+the perfect points are its $0$-dimensional strata (Lemma~\ref{lem:rank}).  Is $W$ a
+$\GL_2(\OK)$-equivariant deformation retract of $\Hb^2$, as Ash's retract is for the linear
+(Koecher) cones \cite{Ash}?  If so, the perfect classes found here are the vertices of a finite cell
+complex for the cohomology of the Hilbert modular group.
+\item Compare the multiplicative and additive extreme forms field by field: \texttt{perfect\_forms}
+finds $\gamma_{\mathrm{add}}^4/(16\gamma_{\mathrm{mult}}^2)\in[1.56,46.1]$, never $1$.
+\end{enumerate}
+
+\section{Literature}\label{sec:lit}
+\emph{Read for this version} (provided by the project owner):
+\cite{PW05,PW09,CIO,Icaza,Thunder,BI97,BI04,CIL,Hirzebruch,Claus,Ong,Ash,GK}.  They fix the novelty statement
+(\S\ref{subsec:new}), the validation (\S\ref{subsec:validation}), the known bounds, the
+attribution of the lower bound to Thunder and its restriction to $h_K=1$ (\S\ref{subsec:gamma},
+via \cite[\S5]{CIL}), the role of non-unimodular minimal vectors for $h_K>1$ and the Mordell
+inequality for the ternary step \cite{BI97}, the lower bound for $h_K>1$ and the source of the
+$d/2$ bound \cite{BI04}, the volume, $\zeta_K(-1)$ and elliptic-point formulas \cite{Hirzebruch},
+the exact lowest points for $D=2,3,5$ \cite{Claus}, the imaginary quadratic volume
+formula \cite{GK}, and the additive results kept apart from ours
+\cite{Ong,Ash}.
+\emph{Still wanted} (cited above only as reported by others):
+\begin{enumerate}[leftmargin=*]
+\item R.~Baeza, \emph{The volume of the space of Humbert reduced forms}, preprint, Universidad de
+Chile, 1994 (cited in \cite{Icaza} for a lower bound linear in $\sqrt{d_K}$ and in \cite{BI97}
+for a lower bound by zeta values) --- the closest relative of Proposition~\ref{thm:lower}.
+\item S.~Ohno and T.~Watanabe \cite{OW} (bounds for $\gamma_{K,n}$, used in \cite{CIO}).
+\item Bounds for $M_{3,K}$: \cite{BI04} estimates only $M_{K,2}$ ($4\mathcal N(K)^2\le M_{K,2}$), and
+the ternary Mordell bound above needs $M_{3,K}$ for $h_K>1$.
+\item M.~Wagner's thesis and the table cited in \cite{PW09}; any later enumeration of
+multiplicative perfect forms.
+\item G.~van der Geer's book on Hilbert modular surfaces (cusps, elliptic points, and the
+orbifold structure needed to turn the volume heuristic of \S\ref{subsec:volume} into a proof);
+Siegel's original papers as cited in \cite{Hirzebruch}.
+\item Perfect and extreme hermitian forms over CM fields (for Proposition~\ref{prop:cm}), e.g.\ the
+generalisations of Voronoi's theorem \cite{OY}; T.~Watanabe's constants of algebraic groups
+and the Mendoza and Vogtmann cell structures, as cited in \cite{CIL}.
+\end{enumerate}
+The additive theory \cite{Leibak,LeibakThesis,GY} is in the companion project.
+
+\appendix
+\section{Counts per field}\label{app:table}
+\input{table_counts.tex}
+
+\begin{thebibliography}{99}
+
+\bibitem{BCIO}
+R.~Baeza, R.~Coulangeon, M.~I.~Icaza and M.~O'Ryan, \emph{Hermite's constant for quadratic number
+fields}, Experiment. Math. \textbf{10} (2001), 543--551.
+
+\bibitem{Ash}
+A.~Ash, \emph{Deformation retracts with lowest possible dimension of arithmetic quotients of
+self-adjoint homogeneous cones}, Math. Ann. \textbf{225} (1977), 69--76.
+
+\bibitem{BI97}
+R.~Baeza and M.~I.~Icaza, \emph{On Humbert--Minkowski's constant for a number field}, Proc. Amer.
+Math. Soc. \textbf{125} (1997), 3195--3202.
+
+\bibitem{BI04}
+R.~Baeza and M.~I.~Icaza, \emph{On the unimodularity of minimal vectors of Humbert forms}, Arch.
+Math. \textbf{83} (2004), 528--535.
+
+\bibitem{CIL}
+W.~K.~Chan, M.~I.~Icaza and E.~A.~Lauret, \emph{A generalized Hermite constant for imaginary
+quadratic fields}, Math. Comp. \textbf{84} (2015), 1883--1900.
+
+\bibitem{Claus}
+G.~Claus, \emph{Die Randmannigfaltigkeiten und die ``tiefsten'' Punkte des Fundamentalbereichs f\"ur
+drei Hilbertsche Modulgruppen}, Math. Ann. \textbf{176} (1968), 225--256.
+
+\bibitem{Cohn1}
+H.~Cohn, \emph{A numerical survey of the floors of various Hilbert fundamental domains}, Math.
+Comp. \textbf{19} (1965), 594--605.
+
+\bibitem{Cohn2}
+H.~Cohn, \emph{On the shape of the fundamental domain of the Hilbert modular group}, Proc. Sympos.
+Pure Math. \textbf{8} (1965), 190--202.
+
+\bibitem{CIO}
+R.~Coulangeon, M.~I.~Icaza and M.~O'Ryan, \emph{Lenstra's constant and extreme forms in number
+fields}, Experiment. Math. \textbf{16} (2007), 455--462.
+
+\bibitem{GK}
+F.~Grunewald and S.~K\"uhnlein, \emph{On the proof of Humbert's volume formula}, Manuscripta Math.
+\textbf{95} (1998), 431--436.
+
+\bibitem{Hirzebruch}
+F.~Hirzebruch, \emph{Hilbert modular surfaces}, Enseign. Math. (2) \textbf{19} (1973), 183--281.
+
+\bibitem{Icaza}
+M.~I.~Icaza, \emph{Hermite constant and extreme forms for algebraic number fields}, J. London Math.
+Soc. (2) \textbf{55} (1997), 11--22.
+
+\bibitem{OW}
+S.~Ohno and T.~Watanabe, \emph{Estimates of Hermite constants for algebraic number fields},
+Comment. Math. Univ. St. Paul \textbf{50} (2001), 53--63.
+
+\bibitem{Ong}
+H.~E.~Ong, \emph{Perfect quadratic forms over real-quadratic number fields}, Geom. Dedicata
+\textbf{20} (1986), 51--77.
+
+\bibitem{Thunder}
+J.~L.~Thunder, \emph{Higher-dimensional analogs of Hermite's constant}, Michigan Math. J. \textbf{45}
+(1998), 301--314.
+
+\bibitem{Coulangeon}
+R.~Coulangeon, \emph{Vorono\"i theory over algebraic number fields}, Monogr. Enseign. Math. \textbf{37}
+(2001), 147--162.
+
+\bibitem{GY}
+P.~E.~Gunnells and D.~Yasaki, \emph{Perfect forms over totally real number fields}, arXiv:0908.3130.
+
+\bibitem{Leibak}
+A.~Leibak, \emph{On additive generalization of Vorono\"i's theory for algebraic number fields},
+Proc. Estonian Acad. Sci. Phys. Math. \textbf{54} (2005), 195--211.
+
+\bibitem{LeibakThesis}
+A.~Leibak, \emph{On additive generalisation of Vorono\"i's theory of perfect forms over algebraic
+number fields}, PhD thesis, Tallinn University of Technology, 2006.
+
+\bibitem{OY}
+K.~Okuda and S.~Yano, \emph{A generalization of Vorono\"i's theorem to algebraic lattices},
+J. Th\'eor. Nombres Bordeaux \textbf{22} (2010), 727--740.
+
+\bibitem{PW05}
+M.~E.~Pohst and M.~Wagner, \emph{On the computation of Hermite--Humbert constants for real quadratic
+number fields}, J. Th\'eor. Nombres Bordeaux \textbf{17} (2005), 905--920.
+
+\bibitem{PW09}
+M.~E.~Pohst and M.~Wagner, \emph{On the computation of Hermite--Humbert constants: the algorithm
+of Cohn revisited}, J. Algebra \textbf{322} (2009), 936--947.
+
+\bibitem{Voronoi}
+G.~Vorono\"i, \emph{Nouvelles applications des param\`etres continus \`a la th\'eorie des formes
+quadratiques. Premier m\'emoire}, J. Reine Angew. Math. \textbf{133} (1908), 97--178.
+
+\bibitem{Yasaki}
+D.~Yasaki, \emph{Perfect unary forms over real quadratic fields}, J. Th\'eor. Nombres Bordeaux
+\textbf{25} (2013), 759--775.
+
+\end{thebibliography}
+\end{document}
